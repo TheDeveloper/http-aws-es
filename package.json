@@ -2,6 +2,7 @@
   "name": "http-aws-es",
   "version": "1.0.1",
   "description": "Use the elasticsearch-js client with Amazon ES",
+  "repository": "https://github.com/TheDeveloper/http-aws-es",
   "main": "connector.js",
   "dependencies": {
     "babel": "^5.8.23"
