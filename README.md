@@ -16,3 +16,5 @@ var es = require('elasticsearch').Client({
   }
 });
 ```
+
+Pre-configured credentials can be fetched automatically (through AWS's `getCredentials` function) by specifying `getCredentials: true` in the `amazonES` object in place of `accessKey` and `secretKey`.
