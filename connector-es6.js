@@ -32,7 +32,10 @@ class HttpAmazonESConnector extends HttpConnector {
     this.endpoint = new AWS.Endpoint(host.host);
     let c = config.amazonES;
     if (c.getCredentials) {
-      AWS.config.getCredentials(() => {
+      AWS.config.getCredentials((err) => {
+        if (err) {
+          throw err;
+        }
         this.creds = AWS.config.credentials;
       });
     } else {
@@ -50,6 +53,7 @@ class HttpAmazonESConnector extends HttpConnector {
     var headers = {};
     var log = this.log;
     var response;
+    var abort = false;
 
     var reqParams = this.makeReqParams(params);
     // general clean-up procedure to run after the request
@@ -72,6 +76,34 @@ class HttpAmazonESConnector extends HttpConnector {
       }
     }, this);
 
+    var sendRequest = () => {
+      var send = new AWS.NodeHttpClient();
+      req = send.handleRequest(request, null, function (_incoming) {
+        incoming = _incoming;
+        status = incoming.statusCode;
+        headers = incoming.headers;
+        response = '';
+
+        var encoding = (headers['content-encoding'] || '').toLowerCase();
+        if (encoding === 'gzip' || encoding === 'deflate') {
+          incoming = incoming.pipe(zlib.createUnzip());
+        }
+
+        incoming.setEncoding('utf8');
+        incoming.on('data', function (d) {
+          response += d;
+        });
+
+        incoming.on('error', cleanUp);
+        incoming.on('end', cleanUp);
+      }, cleanUp);
+
+      req.on('error', cleanUp);
+
+      req.setNoDelay(true);
+      req.setSocketKeepAlive(true);
+    };
+
     request = new AWS.HttpRequest(this.endpoint);
 
     // copy across params
@@ -86,36 +118,29 @@ class HttpAmazonESConnector extends HttpConnector {
 
     // Sign the request (Sigv4)
     var signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(this.creds, new Date());
 
-    var send = new AWS.NodeHttpClient();
-    req = send.handleRequest(request, null, function (_incoming) {
-      incoming = _incoming;
-      status = incoming.statusCode;
-      headers = incoming.headers;
-      response = '';
-
-      var encoding = (headers['content-encoding'] || '').toLowerCase();
-      if (encoding === 'gzip' || encoding === 'deflate') {
-        incoming = incoming.pipe(zlib.createUnzip());
-      }
-
-      incoming.setEncoding('utf8');
-      incoming.on('data', function (d) {
-        response += d;
-      });
-
-      incoming.on('error', cleanUp);
-      incoming.on('end', cleanUp);
-    }, cleanUp);
-
-    req.on('error', cleanUp);
-
-    req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+    if (this.amazonES.getCredentials && !this.creds) {
+      const waitForCredentials = () => {
+        setTimeout(() => {
+          if (abort) {
+           return;
+          } else if (this.creds) {
+            signer.addAuthorization(this.creds, new Date());
+            sendRequest();
+          } else {
+            waitForCredentials();
+          }
+        }, 100);
+      };
+      waitForCredentials();
+    } else {
+      signer.addAuthorization(this.creds, new Date());
+      sendRequest();
+    }
 
     return function () {
-      req.abort();
+      abort = true;
+      req && req.abort();
     };
   }
 }
