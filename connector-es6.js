@@ -11,7 +11,8 @@
  *  amazonES: {
  *    region: 'us-east-1',
  *    accessKey: 'AKID',
- *    secretKey: 'secret'
+ *    secretKey: 'secret',
+ *    credentials: new AWS.EnvironmentCredentials('AWS') // Optional
  *  }
  * });
  *
@@ -31,7 +32,11 @@ class HttpAmazonESConnector extends HttpConnector {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
     let c = config.amazonES;
-    this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
+    if (c.credentials) {
+      this.creds = c.credentials;
+    } else {
+      this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
+    }
     this.amazonES = c;
   }
 
