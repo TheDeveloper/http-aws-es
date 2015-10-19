@@ -88,7 +88,7 @@ class HttpAmazonESConnector extends HttpConnector {
     signer.addAuthorization(this.creds, new Date());
 
     var send = new AWS.NodeHttpClient();
-    var req = send.handleRequest(request, null, function (_incoming) {
+    req = send.handleRequest(request, null, function (_incoming) {
       incoming = _incoming;
       status = incoming.statusCode;
       headers = incoming.headers;
