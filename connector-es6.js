@@ -79,7 +79,11 @@ class HttpAmazonESConnector extends HttpConnector {
       }
     }, this);
 
-    var sendRequest = () => {
+    var signAndSend = () => {
+      // Sign the request (Sigv4)
+      var signer = new AWS.Signers.V4(request, 'es');
+      signer.addAuthorization(this.creds, new Date());
+
       var send = new AWS.NodeHttpClient();
       req = send.handleRequest(request, null, function (_incoming) {
         incoming = _incoming;
@@ -119,26 +123,29 @@ class HttpAmazonESConnector extends HttpConnector {
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
-    // Sign the request (Sigv4)
-    var signer = new AWS.Signers.V4(request, 'es');
-
     if (this.amazonES.getCredentials && !this.creds) {
       const waitForCredentials = () => {
         setTimeout(() => {
           if (abort) {
            return;
           } else if (this.creds) {
-            signer.addAuthorization(this.creds, new Date());
-            sendRequest();
+            signAndSend();
           } else {
             waitForCredentials();
           }
         }, 100);
       };
       waitForCredentials();
+    } else if (this.creds.needsRefresh()) {
+      this.creds.refresh((err) =>{
+        if (err) {
+          cleanUp(err);
+        } else {
+          signAndSend();
+        }
+      });
     } else {
-      signer.addAuthorization(this.creds, new Date());
-      sendRequest();
+      signAndSend();
     }
 
     return function () {
