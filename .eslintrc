@@ -1,0 +1,9 @@
+extends: eslint:recommended
+parser: babel-eslint
+rules:
+  strict: 0
+
+env:
+  node: true
+  es6: true
+

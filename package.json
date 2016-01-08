@@ -1,14 +1,29 @@
 {
   "name": "http-aws-es",
-  "version": "1.0.2",
+  "version": "1.1.3",
   "description": "Use the elasticsearch-js client with Amazon ES",
   "repository": "https://github.com/TheDeveloper/http-aws-es",
+  "bugs": "https://github.com/TheDeveloper/http-aws-es/issues",
+  "keywords": [
+    "elasticsearch",
+    "elasticsearch-js",
+    "aws-es",
+    "aws",
+    "amazon",
+    "es",
+    "http",
+    "connector",
+    "extension",
+    "sign"
+  ],
   "main": "connector.js",
   "dependencies": {
-    "babel": "^5.8.23"
+    "aws-sdk": "^2.2.19"
   },
   "devDependencies": {
-    "babel": "^5.8.23"
+    "babel": "^5.8.23",
+    "babel-eslint": "^4.1.3",
+    "eslint": "^1.7.1"
   },
   "scripts": {
     "prepublish": "babel ./connector-es6.js > ./connector.js",

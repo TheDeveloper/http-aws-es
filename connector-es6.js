@@ -11,7 +11,8 @@
  *  amazonES: {
  *    region: 'us-east-1',
  *    accessKey: 'AKID',
- *    secretKey: 'secret'
+ *    secretKey: 'secret',
+ *    credentials: new AWS.EnvironmentCredentials('AWS') // Optional
  *  }
  * });
  *
@@ -38,6 +39,8 @@ class HttpAmazonESConnector extends HttpConnector {
         }
         this.creds = AWS.config.credentials;
       });
+    } else if (c.credentials) {
+      this.creds = c.credentials;
     } else {
       this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
     }
