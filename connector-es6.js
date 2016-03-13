@@ -8,11 +8,12 @@
  * var es = require('elasticsearch').Client({
  *  hosts: 'https://amazon-es-host.us-east-1.es.amazonaws.com',
  *  connectionClass: require('http-aws-es'),
- *  amazonES: {
- *    region: 'us-east-1',
- *    accessKey: 'AKID',
- *    secretKey: 'secret',
+ *  amazonES: {                                          // Optional
+ *    region: 'us-east-1',                               // Optional
+ *    accessKey: 'AKID',                                 // Optional
+ *    secretKey: 'secret',                               // Optional
  *    credentials: new AWS.EnvironmentCredentials('AWS') // Optional
+ *    httpOptions: myHttpOptions                         // Optional, see AWS.config.httpOptions
  *  }
  * });
  *
@@ -31,13 +32,33 @@ class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
-    let c = config.amazonES;
-    if (c.credentials) {
-      this.creds = c.credentials;
+    this.region = this.getRegion(config.amazonES);
+    this.creds = this.getCredentials(config.amazonES);
+    this.httpOptions = this.getHttpOptions(config.amazonES);
+  }
+
+  getRegion(amazonES) {
+    if (amazonES && amazonES.region) {
+      return amazonES.region;
     } else {
-      this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
+      return AWS.config.region;
     }
-    this.amazonES = c;
+  }
+  getCredentials(amazonES) {
+    if (amazonES && amazonES.credentials) {
+      return amazonES.credentials;
+    } else if(amazonES && amazonES.accessKey && amazonES.secretKey) {
+      return new AWS.Credentials(amazonES.accessKey, amazonES.secretKey);
+    } else {
+      return AWS.config.credentials;
+    }
+  }
+  getHttpOptions() {
+    if(amazonES && amazonES.httpOptions) {
+      return amazonES.httpOptions;
+    } else {
+      return AWS.config.httpOptions;
+    }
   }
 
   request(params, cb) {
@@ -77,7 +98,7 @@ class HttpAmazonESConnector extends HttpConnector {
     for (let p in reqParams) {
       request[p] = reqParams[p];
     }
-    request.region = this.amazonES.region;
+    request.region = this.region;
     if (params.body) request.body = params.body;
     if (!request.headers) request.headers = {};
     request.headers['presigned-expires'] = false;
@@ -88,7 +109,7 @@ class HttpAmazonESConnector extends HttpConnector {
     signer.addAuthorization(this.creds, new Date());
 
     var send = new AWS.NodeHttpClient();
-    req = send.handleRequest(request, AWS.config.httpOptions, function (_incoming) {
+    req = send.handleRequest(request, this.httpOptions, function (_incoming) {
       incoming = _incoming;
       status = incoming.statusCode;
       headers = incoming.headers;
