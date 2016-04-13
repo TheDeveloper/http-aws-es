@@ -27,20 +27,49 @@ let HttpConnector = require('elasticsearch/src/lib/connectors/http')
 let _ = require('elasticsearch/src/lib/utils');
 let zlib = require('zlib');
 
+/**
+ * Checks to see if this object acts like a Promise, i.e. has a "then"
+ * function.
+ */
+function isThenable(value) {
+  return typeof value === 'object' &&
+    value !== null &&
+    typeof value.then === 'function';
+}
+
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
-    let c = config.amazonES;
-    if (c.credentials) {
-      this.creds = c.credentials;
-    } else {
-      this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
-    }
-    this.amazonES = c;
+    this.amazonES = config.amazonES;
+  }
+
+  resolveCredentials() {
+    return new Promise((resolve, reject) => {
+      const { credentials, accessKey, secretKey } = this.amazonES;
+      if (credentials) {
+        if (isThenable(credentials)) {
+          credentials
+            .then(res => resolve(res))
+            .catch(err => reject(err));
+        } else {
+          resolve(credentials);
+        }
+      } else {
+        resolve(new AWS.Credentials(accessKey, secretKey));
+      }
+    });
   }
 
   request(params, cb) {
+    this.resolveCredentials()
+      .then((credentials) => {
+        this._request(credentials, params, cb);
+      })
+      .catch(err => cb(err));
+  }
+
+  _request(credentials, params, cb) {
     var incoming;
     var timeoutId;
     var request;
@@ -85,7 +114,7 @@ class HttpAmazonESConnector extends HttpConnector {
 
     // Sign the request (Sigv4)
     var signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(this.creds, new Date());
+    signer.addAuthorization(credentials, new Date());
 
     var send = new AWS.NodeHttpClient();
     req = send.handleRequest(request, null, function (_incoming) {
