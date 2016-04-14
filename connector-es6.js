@@ -44,6 +44,11 @@ class HttpAmazonESConnector extends HttpConnector {
     this.amazonES = config.amazonES;
   }
 
+  /**
+   * Resolve the credentails provided to amazonES.
+   *
+   * @return {Promise} promise that resolves with an AWS.Credential subclass
+   */
   _resolveCredentials() {
     return new Promise((resolve, reject) => {
       const { credentials, accessKey, secretKey } = this.amazonES;
@@ -61,27 +66,28 @@ class HttpAmazonESConnector extends HttpConnector {
     });
   }
 
-  _refreshCredentials(credentials) {
+  /**
+   * Get the existing credentials. This will handle refreshing the credentials if needed.
+   *
+   * @param {Object} credentials subclass of AWS.Credentials
+   * @return {Promise} promise that resolves with the refreshed credentials
+   */
+  _getCredentials(credentials) {
     return new Promise((resolve, reject) => {
-      if (credentials.needsRefresh()) {
-        this.log.warning('refreshing credentials:', credentials.constructor.name);
-        credentials.refresh(err => {
-          if (err) {
-            this.log.error('failed to refresh credentials:', err);
-            reject(err);
-          } else {
-            resolve(credentials);
-          }
-        });
-      } else {
-        resolve(credentials);
-      }
+      credentials.get(err => {
+        if (err) {
+          this.log.error('failed to get credentials:', err);
+          reject(err);
+        } else {
+          resolve(credentials);
+        }
+      });
     });
   }
 
   request(params, cb) {
     this._resolveCredentials()
-      .then(credentials => this._refreshCredentials(credentials))
+      .then(credentials => this._getCredentials(credentials))
       .then(credentials => this._request(credentials, params, cb))
       .catch(err => cb(err));
   }
