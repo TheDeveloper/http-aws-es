@@ -95,7 +95,7 @@
               "enable_epel",
               "install_node",
               "fetch_code",
-              "install_node_modules"
+              "test"
             ]
           },
           "install_cfn": {
@@ -179,32 +179,67 @@
           },
           "fetch_code": {
             "sources": {
-              "/etc/http-aws-es": {
+              "/etc/http-aws-es-test": {
                 "Fn::Join": [
                   "",
                   [
-                    "https://github.com/",
+                    "https://",
                     {
-                      "Ref": "GitHubUser"
+                      "Ref": "CodeZipS3Bucket"
                     },
-                    "/",
+                    ".s3.amazonaws.com/",
                     {
-                      "Ref": "GitHubRepository"
-                    },
-                    "/tarball/",
-                    {
-                      "Ref": "GitBranch"
+                      "Ref": "CodeZipS3Key"
                     }
                   ]
                 ]
               }
             }
           },
-          "install_node_modules": {
-            "01_npm_install": {
-              "cwd": "/etc/http-aws-es",
-              "command": ["sudo", "-u", "ec2-user", "npm", "install"]
+          "test": {
+            "commands": {
+              "test": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "node ec2.js --endpoint=",
+                      {
+                        "Fn::GetAtt": [
+                          "esdomain",
+                          "DomainEndpoint"
+                        ]
+                      },
+                      " --region=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      " > /home/ec2-user/log.txt"
+                    ]
+                  ]
+                },
+                "cwd": "/etc/http-aws-es-test"
+              }
             }
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "type": "S3",
+            "accessKeyId": {
+              "Ref": "s3iamkey"
+            },
+            "secretKey": {
+              "Fn::GetAtt": [
+                "s3iamkey",
+                "SecretAccessKey"
+              ]
+            },
+            "buckets": [
+              {
+                "Ref": "CodeZipS3Bucket"
+              }
+            ]
           }
         }
       },
@@ -236,19 +271,14 @@
       "Properties": {
         "Runtime": "nodejs4.3",
         "Code": {
-          "ZipFile": {
-            "Fn::Join": [
-              "\n",
-              [
-                "var response = require('cfn-response');",
-                "exports.handler = function(event, context) {",
-                "  response.send(event, context, response.SUCCESS, {});",
-                "};"
-              ]
-            ]
+          "S3Bucket": {
+            "Ref": "CodeZipS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "CodeZipS3Key"
           }
         },
-        "Handler": "index.handler",
+        "Handler": "lambda.handler",
         "Role": {
           "Fn::GetAtt": [
             "role",
@@ -288,10 +318,60 @@
               "Action": [
                 "sts:AssumeRole"
               ]
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
             }
           ]
         },
         "Path": "/"
+      }
+    },
+    "s3iamuser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "read-code-s3-bucket",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:GetObject",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "CodeZipS3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "s3iamkey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "s3iamuser"
+        }
       }
     },
     "elasticsearchpolicy": {
@@ -378,20 +458,13 @@
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "GitHubUser": {
-      "Description": "GitHub username of the owner of the repository to be checked out",
-      "Type": "String",
-      "Default": "TheDeveloper"
+    "CodeZipS3Bucket": {
+      "Description": "S3 bucket for code archive",
+      "Type": "String"
     },
-    "GitHubRepository": {
-      "Description": "Name of GitHub Repository (i.e. http-aws-es)",
-      "Type": "String",
-      "Default": "http-aws-es"
-    },
-    "GitBranch": {
-      "Description": "Branch of git repository to check out",
-      "Type": "String",
-      "Default": "master"
+    "CodeZipS3Key": {
+      "Description": "S3 key for code archive",
+      "Type": "String"
     }
   },
   "Outputs": {
@@ -411,6 +484,12 @@
         ]
       },
       "Description": "Command line to SSH into the newly started instance"
+    },
+    "LambdaFunctionName": {
+      "Value": {
+        "Ref": "lambdafunc"
+      },
+      "Description": "Name of the lambda function"
     }
   }
 }
