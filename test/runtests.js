@@ -153,10 +153,11 @@ function createOrUpdateStack(callback) {
     });
 }
 
-function invokeLambda(functionName) {
+function invokeLambda(functionName, esEndpoint) {
     console.log("Invoking Lambda function");
     lambda.invoke({
-        FunctionName: functionName
+        FunctionName: functionName,
+        Payload: JSON.stringify({endpoint: esEndpoint})
     }, function(err, data) {
         if (err) {
             console.error(err);
@@ -176,17 +177,21 @@ function main() {
             createOrUpdateStack(function(outputs) {
                 var sshIndex = null;
                 var lambdaIndex = null;
+                var endpointIndex = null;
                 for (var i = 0; i < outputs.length; i++) {
                     if (outputs[i].OutputKey == "SSHCommand") {
                         sshIndex = i;
                     } else if (outputs[i].OutputKey == "LambdaFunctionName") {
                         lambdaIndex = i;
+                    } else if (outputs[i].OutputKey == "ElasticsearchEndpoint") {
+                        endpointIndex = i;
                     }
                 }
                 var sshCommand = outputs[sshIndex].OutputValue;
                 var lambdaFunctionName = outputs[lambdaIndex].OutputValue;
-                console.log("SSH: " + sshCommand);
-                invokeLambda(lambdaFunctionName);
+                var esEndpoint = outputs[endpointIndex].OutputValue;
+                console.log("SSH command: " + sshCommand);
+                invokeLambda(lambdaFunctionName, esEndpoint);
             });
         });
     });
