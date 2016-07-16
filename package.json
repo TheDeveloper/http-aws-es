@@ -29,6 +29,12 @@
     "prepublish": "babel ./connector-es6.js > ./connector.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "connector.js"
+  ],
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
   "license": "MIT"
 }
