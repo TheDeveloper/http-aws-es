@@ -18,7 +18,7 @@
   ],
   "main": "connector.js",
   "dependencies": {
-    "aws-sdk": "^2.2.19"
+    "aws-sdk": "^2.4.8"
   },
   "devDependencies": {
     "babel": "^5.8.23",
