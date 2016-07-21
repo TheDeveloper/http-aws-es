@@ -10,6 +10,7 @@ Please note that the driver script does not tear down the Cloudformation stack a
 - Pick an AWS region in which to run the tests.
 - Create an S3 bucket in the correct region, and ensure your IAM user can upload to it.
 - Create or import an EC2 key pair in the correct region.
+- Run `npm install` from inside the `test` directory to install the needed libraries in `test/node_modules`.
 
 == Command line
 
