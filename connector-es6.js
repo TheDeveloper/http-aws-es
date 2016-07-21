@@ -132,7 +132,9 @@ class HttpAmazonESConnector extends HttpConnector {
     request = new AWS.HttpRequest(this.endpoint);
 
     // copy across params
-    request = Object.assign({}, request, reqParams);
+    for (let p in reqParams) {
+      request[p] = reqParams[p];
+    }
     request.region = this.amazonES.region;
     if (params.body) request.body = params.body;
     if (!request.headers) request.headers = {};
