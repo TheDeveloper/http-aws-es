@@ -27,43 +27,60 @@ let HttpConnector = require('elasticsearch/src/lib/connectors/http');
 let _ = require('elasticsearch/src/lib/utils');
 let zlib = require('zlib');
 
+function getAWSCredentials(creds, cb) {
+  function fail(err) {
+    return setImmediate(() => cb(err));
+  }
+
+  function success(creds) {
+    return setImmediate(() => cb(null, creds));
+  }
+
+  if (creds) {
+    creds.get(err => {
+      if (err) return fail(err);
+      return success(creds);
+    });
+    return;
+  }
+
+  var chain = new AWS.CredentialProviderChain();
+
+  chain.resolve((err, creds) => {
+    if (err) return fail(err);
+
+    return success(creds);
+  });
+}
+
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
-    let c = config.amazonES;
-    if (c.getCredentials) {
-      AWS.config.getCredentials((err) => {
-        if (err) {
-          throw err;
-        }
-        this.creds = AWS.config.credentials;
-      });
-    } else if (c.credentials) {
+    let c = config.amazonES || {};
+
+    if (typeof c.credentials === 'object') {
       this.creds = c.credentials;
-    } else {
+    } else if (c.accessKey && c.secretKey) {
       this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
     }
     this.amazonES = c;
   }
 
   request(params, cb) {
-    var incoming;
-    var timeoutId;
-    var request;
-    var req;
-    var status = 0;
-    var headers = {};
-    var log = this.log;
-    var response;
-    var abort = false;
+    let incoming;
+    let request;
+    let req;
+    let status = 0;
+    let headers = {};
+    const log = this.log;
+    let response;
+    let abort = false;
 
-    var reqParams = this.makeReqParams(params);
+    let reqParams = this.makeReqParams(params);
     // general clean-up procedure to run after the request
     // completes, has an error, or is aborted.
-    var cleanUp = _.bind(function (err) {
-      clearTimeout(timeoutId);
-
+    let cleanUp = _.bind(function (err) {
       req && req.removeAllListeners();
       incoming && incoming.removeAllListeners();
 
@@ -79,19 +96,20 @@ class HttpAmazonESConnector extends HttpConnector {
       }
     }, this);
 
-    var signAndSend = () => {
+    let dispatch = creds => {
+      if (abort) return cleanUp();
       // Sign the request (Sigv4)
-      var signer = new AWS.Signers.V4(request, 'es');
-      signer.addAuthorization(this.creds, new Date());
+      let signer = new AWS.Signers.V4(request, 'es');
+      signer.addAuthorization(creds, new Date());
 
-      var send = new AWS.NodeHttpClient();
+      let send = new AWS.NodeHttpClient();
       req = send.handleRequest(request, null, function (_incoming) {
         incoming = _incoming;
         status = incoming.statusCode;
         headers = incoming.headers;
         response = '';
 
-        var encoding = (headers['content-encoding'] || '').toLowerCase();
+        let encoding = (headers['content-encoding'] || '').toLowerCase();
         if (encoding === 'gzip' || encoding === 'deflate') {
           incoming = incoming.pipe(zlib.createUnzip());
         }
@@ -114,39 +132,18 @@ class HttpAmazonESConnector extends HttpConnector {
     request = new AWS.HttpRequest(this.endpoint);
 
     // copy across params
-    for (let p in reqParams) {
-      request[p] = reqParams[p];
-    }
+    request = Object.assign({}, request, reqParams);
     request.region = this.amazonES.region;
     if (params.body) request.body = params.body;
     if (!request.headers) request.headers = {};
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
-    if (this.amazonES.getCredentials && !this.creds) {
-      const waitForCredentials = () => {
-        setTimeout(() => {
-          if (abort) {
-           return;
-          } else if (this.creds) {
-            signAndSend();
-          } else {
-            waitForCredentials();
-          }
-        }, 100);
-      };
-      waitForCredentials();
-    } else if (this.creds.needsRefresh()) {
-      this.creds.refresh((err) =>{
-        if (err) {
-          cleanUp(err);
-        } else {
-          signAndSend();
-        }
-      });
-    } else {
-      signAndSend();
-    }
+    getAWSCredentials(this.creds, (err, creds) => {
+      if (err) return cleanUp(err);
+
+      dispatch(creds);
+    });
 
     return function () {
       abort = true;
