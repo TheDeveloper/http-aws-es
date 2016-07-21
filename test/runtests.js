@@ -1,18 +1,14 @@
-var archiver = require('archiver');
-var AWS = require('aws-sdk');
+var archiver, AWS, s3, cloudformation, lambda;
 var child_process = require('child_process');
 var fs = require('fs');
 var path = require('path');
 
-var s3 = new AWS.S3();
-var cloudformation = new AWS.CloudFormation();
-var lambda = new AWS.Lambda();
-var stackName = 'http-aws-es-test';
 var templateData = fs.readFileSync(path.join(__dirname, 'cloudformation-template'), {encoding: 'utf8'});
 var codeZipFileName = 'package.zip';
 var s3Key = 'package.zip';
 
 var options = require('minimist')(process.argv.slice(2));
+var stackName = options.stackname || 'http-aws-es-test';
 
 function checkArgs() {
     if (!process.env.AWS_REGION) {
@@ -172,6 +168,11 @@ function main() {
     checkArgs();
     compile();
     deps();
+    archiver = require(__dirname+'/node_modules/archiver');
+    AWS = require(__dirname+'/node_modules/aws-sdk');
+    s3 = new AWS.S3();
+    cloudformation = new AWS.CloudFormation();
+    lambda = new AWS.Lambda();
     build(function() {
         uploadCode(function() {
             createOrUpdateStack(function(outputs) {
