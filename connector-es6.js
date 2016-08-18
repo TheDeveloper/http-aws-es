@@ -53,7 +53,7 @@ class HttpAmazonESConnector extends HttpConnector {
       return AWS.config.credentials;
     }
   }
-  getHttpOptions() {
+  getHttpOptions(amazonES) {
     if(amazonES && amazonES.httpOptions) {
       return amazonES.httpOptions;
     } else {
