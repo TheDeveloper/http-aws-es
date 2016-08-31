@@ -5,15 +5,13 @@
  * Define the Amazon ES config and the connection handler
  * in the client configuration:
  *
+ * var config = new AWS.Config({
+ *  accessKeyId: 'AKID', secretAccessKey: 'secret', region: 'us-east-1'
+ * });
  * var es = require('elasticsearch').Client({
  *  hosts: 'https://amazon-es-host.us-east-1.es.amazonaws.com',
  *  connectionClass: require('http-aws-es'),
- *  amazonES: {
- *    region: 'us-east-1',
- *    accessKey: 'AKID',
- *    secretKey: 'secret',
- *    credentials: new AWS.EnvironmentCredentials('AWS') // Optional
- *  }
+ *  amazonES: config
  * });
  *
  * @param client {Client} - The Client that this class belongs to
@@ -27,7 +25,7 @@ let HttpConnector = require('elasticsearch/src/lib/connectors/http');
 let _ = require('elasticsearch/src/lib/utils');
 let zlib = require('zlib');
 
-function getAWSCredentials(creds, cb) {
+function getAWSCredentials(config, cb) {
   function fail(err) {
     return setImmediate(() => cb(err));
   }
@@ -36,17 +34,7 @@ function getAWSCredentials(creds, cb) {
     return setImmediate(() => cb(null, creds));
   }
 
-  if (creds) {
-    creds.get(err => {
-      if (err) return fail(err);
-      return success(creds);
-    });
-    return;
-  }
-
-  var chain = new AWS.CredentialProviderChain();
-
-  chain.resolve((err, creds) => {
+  config.getCredentials((err, creds) => {
     if (err) return fail(err);
 
     return success(creds);
@@ -57,14 +45,7 @@ class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
-    let c = config.amazonES || {};
-
-    if (typeof c.credentials === 'object') {
-      this.creds = c.credentials;
-    } else if (c.accessKey && c.secretKey) {
-      this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
-    }
-    this.amazonES = c;
+    this.amazonES = config.amazonES || {};
   }
 
   request(params, cb) {
@@ -141,7 +122,7 @@ class HttpAmazonESConnector extends HttpConnector {
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
-    getAWSCredentials(this.creds, (err, creds) => {
+    getAWSCredentials(this.amazonES, (err, creds) => {
       if (err) return cleanUp(err);
 
       dispatch(creds);
