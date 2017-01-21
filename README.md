@@ -3,7 +3,7 @@ Makes elasticsearch-js compatible with Amazon ES. It uses the aws-sdk to make si
 
 ## Installation
 ```bash
-npm install http-aws-es --save
+npm install --save http-aws-es
 ```
 
 ## Usage
