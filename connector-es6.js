@@ -23,7 +23,7 @@
  */
 
 let AWS = require('aws-sdk');
-let HttpConnector = require('elasticsearch/src/lib/connectors/http')
+let HttpConnector = require('elasticsearch/src/lib/connectors/http');
 let _ = require('elasticsearch/src/lib/utils');
 let zlib = require('zlib');
 
@@ -32,7 +32,14 @@ class HttpAmazonESConnector extends HttpConnector {
     super(host, config);
     this.endpoint = new AWS.Endpoint(host.host);
     let c = config.amazonES;
-    if (c.credentials) {
+    if (c.getCredentials) {
+      AWS.config.getCredentials((err) => {
+        if (err) {
+          throw err;
+        }
+        this.creds = AWS.config.credentials;
+      });
+    } else if (c.credentials) {
       this.creds = c.credentials;
     } else {
       this.creds = new AWS.Credentials(c.accessKey, c.secretKey);
@@ -49,6 +56,7 @@ class HttpAmazonESConnector extends HttpConnector {
     var headers = {};
     var log = this.log;
     var response;
+    var abort = false;
 
     var reqParams = this.makeReqParams(params);
     // general clean-up procedure to run after the request
@@ -71,6 +79,38 @@ class HttpAmazonESConnector extends HttpConnector {
       }
     }, this);
 
+    var signAndSend = () => {
+      // Sign the request (Sigv4)
+      var signer = new AWS.Signers.V4(request, 'es');
+      signer.addAuthorization(this.creds, new Date());
+
+      var send = new AWS.NodeHttpClient();
+      req = send.handleRequest(request, null, function (_incoming) {
+        incoming = _incoming;
+        status = incoming.statusCode;
+        headers = incoming.headers;
+        response = '';
+
+        var encoding = (headers['content-encoding'] || '').toLowerCase();
+        if (encoding === 'gzip' || encoding === 'deflate') {
+          incoming = incoming.pipe(zlib.createUnzip());
+        }
+
+        incoming.setEncoding('utf8');
+        incoming.on('data', function (d) {
+          response += d;
+        });
+
+        incoming.on('error', cleanUp);
+        incoming.on('end', cleanUp);
+      }, cleanUp);
+
+      req.on('error', cleanUp);
+
+      req.setNoDelay(true);
+      req.setSocketKeepAlive(true);
+    };
+
     request = new AWS.HttpRequest(this.endpoint);
 
     // copy across params
@@ -83,38 +123,34 @@ class HttpAmazonESConnector extends HttpConnector {
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
-    // Sign the request (Sigv4)
-    var signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(this.creds, new Date());
-
-    var send = new AWS.NodeHttpClient();
-    req = send.handleRequest(request, null, function (_incoming) {
-      incoming = _incoming;
-      status = incoming.statusCode;
-      headers = incoming.headers;
-      response = '';
-
-      var encoding = (headers['content-encoding'] || '').toLowerCase();
-      if (encoding === 'gzip' || encoding === 'deflate') {
-        incoming = incoming.pipe(zlib.createUnzip());
-      }
-
-      incoming.setEncoding('utf8');
-      incoming.on('data', function (d) {
-        response += d;
+    if (this.amazonES.getCredentials && !this.creds) {
+      const waitForCredentials = () => {
+        setTimeout(() => {
+          if (abort) {
+           return;
+          } else if (this.creds) {
+            signAndSend();
+          } else {
+            waitForCredentials();
+          }
+        }, 100);
+      };
+      waitForCredentials();
+    } else if (this.creds.needsRefresh()) {
+      this.creds.refresh((err) =>{
+        if (err) {
+          cleanUp(err);
+        } else {
+          signAndSend();
+        }
       });
-
-      incoming.on('error', cleanUp);
-      incoming.on('end', cleanUp);
-    }, cleanUp);
-
-    req.on('error', cleanUp);
-
-    req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+    } else {
+      signAndSend();
+    }
 
     return function () {
-      req.abort();
+      abort = true;
+      req && req.abort();
     };
   }
 }
