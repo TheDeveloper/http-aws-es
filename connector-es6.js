@@ -30,7 +30,12 @@ let zlib = require('zlib');
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
-    this.endpoint = new AWS.Endpoint(host.host);
+    if (!('protocol' in host) || !('port' in host)) {
+      this.endpoint = new AWS.Endpoint(host.host);
+    } else {
+      var endpointUrl = host.protocol + '://' + host.host + ':' + host.port;
+      this.endpoint = new AWS.Endpoint(endpointUrl);
+    }
     let c = config.amazonES;
     if (c.credentials) {
       this.creds = c.credentials;
