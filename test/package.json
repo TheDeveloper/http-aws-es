@@ -1,0 +1,13 @@
+{
+  "name": "http-aws-es-test",
+  "version": "1.0.0",
+  "description": "Test package for http-aws-es",
+  "main": "ec2.js",
+  "dependencies": {
+    "archiver": "^1.0.0",
+    "aws-sdk": "^2.4.7",
+    "elasticsearch": "^11.0.1",
+    "http-aws-es": "file:..",
+    "minimist": "^1.2.0"
+  }
+}
