@@ -83,39 +83,44 @@ class HttpAmazonESConnector extends HttpConnector {
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
-    // Sign the request (Sigv4)
-    var signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(this.creds, new Date());
+    // Ensure credentials are valid:
+    this.creds.get(_.bind(function (err) {
+      if (err) return cleanUp(err);
 
-    var send = new AWS.NodeHttpClient();
-    req = send.handleRequest(request, null, function (_incoming) {
-      incoming = _incoming;
-      status = incoming.statusCode;
-      headers = incoming.headers;
-      response = '';
+      // Sign the request (Sigv4)
+      var signer = new AWS.Signers.V4(request, 'es');
+      signer.addAuthorization(this.creds, new Date());
 
-      var encoding = (headers['content-encoding'] || '').toLowerCase();
-      if (encoding === 'gzip' || encoding === 'deflate') {
-        incoming = incoming.pipe(zlib.createUnzip());
-      }
+      var send = new AWS.NodeHttpClient();
+      req = send.handleRequest(request, null, function (_incoming) {
+        incoming = _incoming;
+        status = incoming.statusCode;
+        headers = incoming.headers;
+        response = '';
 
-      incoming.setEncoding('utf8');
-      incoming.on('data', function (d) {
-        response += d;
-      });
+        var encoding = (headers['content-encoding'] || '').toLowerCase();
+        if (encoding === 'gzip' || encoding === 'deflate') {
+          incoming = incoming.pipe(zlib.createUnzip());
+        }
 
-      incoming.on('error', cleanUp);
-      incoming.on('end', cleanUp);
-    }, cleanUp);
+        incoming.setEncoding('utf8');
+        incoming.on('data', function (d) {
+          response += d;
+        });
 
-    req.on('error', cleanUp);
+        incoming.on('error', cleanUp);
+        incoming.on('end', cleanUp);
+      }, cleanUp);
 
-    req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+      req.on('error', cleanUp);
 
-    return function () {
-      req.abort();
-    };
+      req.setNoDelay(true);
+      req.setSocketKeepAlive(true);
+
+      return function () {
+        req.abort();
+      };
+    }, this));
   }
 }
 
