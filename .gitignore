@@ -1,5 +1,6 @@
 node_modules
 .DS_Store
-connector.js
+index.js
+node*.js
 
 npm-debug.log
