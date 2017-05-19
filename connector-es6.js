@@ -49,6 +49,7 @@ class HttpAmazonESConnector extends HttpConnector {
     var headers = {};
     var log = this.log;
     var response;
+    var keepAlive = params.keepAlive === undefined ? true : !!params.keepAlive;
 
     var reqParams = this.makeReqParams(params);
     // general clean-up procedure to run after the request
@@ -111,7 +112,7 @@ class HttpAmazonESConnector extends HttpConnector {
     req.on('error', cleanUp);
 
     req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+    req.setSocketKeepAlive(keepAlive);
 
     return function () {
       req.abort();
