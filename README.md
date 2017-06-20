@@ -3,35 +3,47 @@ Makes elasticsearch-js compatible with Amazon ES. It uses the aws-sdk to make si
 
 ## Installation
 ```bash
-npm install --save http-aws-es
+# Install the connector, elasticsearch client and aws-sdk
+npm install --save http-aws-es aws-sdk elasticsearch
 ```
 
 ## Usage
-Define the Amazon ES config and the connection handler in the client configuration:
 ```javascript
+// configure the region for aws-sdk
+let AWS = require('aws-sdk');
+AWS.config.update({ region: 'us-east-1' });
+
+// create an elasticsearch client for your Amazon ES
 var es = require('elasticsearch').Client({
-  hosts: 'https://amazon-es-host.us-east-1.es.amazonaws.com',
-  connectionClass: require('http-aws-es'),
-  amazonES: {
-    region: 'us-east-1',
-    accessKey: 'AKID',
-    secretKey: 'secret'
-  }
+  hosts: [ 'https://amazon-es-host.us-east-1.es.amazonaws.com:80' ],
+  connectionClass: require('http-aws-es')
 });
 ```
 
-Alternatively you can pass in your own [AWS Credentials object](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Credentials.html).
-This is particularly useful if running on AWS Lambda, since the appropriate credentials are already in the environment.
+## Credentials
+The connector uses aws-sdk's default credential behaviour to obtain credentials from your environment. If you would like to set credentials manually, you can set them on aws-sdk:
 
 ```javascript
-var AWS = require('aws-sdk');
-var myCredentials = new AWS.EnvironmentCredentials('AWS'); // Lambda provided credentials
-var es = require('elasticsearch').Client({
-  hosts: 'https://amazon-es-host.us-east-1.es.amazonaws.com',
-  connectionClass: require('http-aws-es'),
-  amazonES: {
-    region: "us-east-1",
-    credentials: myCredentials
-  }
+AWS.config.update({
+  credentials: new AWS.Credentials(accessKeyId, secretAccessKey)
 });
+```
+
+## Requiring for your platform
+To take advantage of new node runtime features there are builds for different versions of node:
+
+```javascript
+// node 8
+require('http-aws-es/node8');
+// node 6 (default)
+require('http-aws-es/node6');
+// node 4
+require('http-aws-es/node4');
+// legacy (node 0.10)
+require('http-aws-es/legacy')
+```
+
+## Test
+```bash
+npm run test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com:80 --region us-east-1
 ```
