@@ -29,20 +29,6 @@ AWS.config.update({
 });
 ```
 
-## Requiring for your platform
-To take advantage of new node runtime features there are builds for different versions of node:
-
-```javascript
-// node 8
-require('http-aws-es/node8');
-// node 6 (default)
-require('http-aws-es/node6');
-// node 4
-require('http-aws-es/node4');
-// legacy (node 0.10)
-require('http-aws-es/legacy')
-```
-
 ## Test
 ```bash
 npm run test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com:80 --region us-east-1
