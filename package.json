@@ -40,5 +40,8 @@
     "build-legacy": "BABEL_ENV=legacy babel ./connector.js -o ./legacy.js"
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "regenerator-runtime": "^0.10.5"
+  }
 }
