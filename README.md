@@ -31,5 +31,5 @@ AWS.config.update({
 
 ## Test
 ```bash
-npm run test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com:80 --region us-east-1
+npm run test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
 ```
