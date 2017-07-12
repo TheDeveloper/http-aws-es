@@ -17,23 +17,31 @@
     "sign"
   ],
   "main": "index.js",
+  "dependencies": {
+    "babel-runtime": "^6.23.0"
+  },
   "peerDependencies": {
-    "aws-sdk": "^2.73.0",
-    "elasticsearch": "^13.1.1"
+    "aws-sdk": "^2.83.0",
+    "elasticsearch": "^13.2.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.73.0",
-    "elasticsearch": "^13.1.1",
+    "aws-sdk": "^2.83.0",
     "babel-cli": "^6.24.1",
     "babel-eslint": "^7.2.3",
-    "babel-preset-env": "^1.5.2",
-    "eslint": "^4.0.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "elasticsearch": "^13.2.0",
+    "eslint": "^4.2.0",
     "minimist": "^1.2.0"
   },
   "scripts": {
     "prepublish": "npm run build",
     "build": "npm run build-node4; npm run build-node6; npm run build-node8; npm run build-legacy",
     "test": "BABEL_ENV=node6 babel-node ./test/local",
+    "test-node8": "BABEL_ENV=node8 node ./test/local",
+    "test-node6": "BABEL_ENV=node6 node ./test/local",
+    "test-node4": "BABEL_ENV=node4 node ./test/local",
+    "test-legacy": "BABEL_ENV=legacy node ./test/local",
     "build-node4": "BABEL_ENV=node4 babel ./connector.js -o ./node4.js",
     "build-node6": "BABEL_ENV=node6 babel ./connector.js -o ./node6.js",
     "build-node8": "BABEL_ENV=node8 babel ./connector.js -o ./node8.js",

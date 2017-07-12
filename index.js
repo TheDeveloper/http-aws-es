@@ -1,4 +1,4 @@
-let nodeMajor = process.version.match(/([0-9]+)\./)[1];
+var nodeMajor = process.version.match(/([0-9]+)\./)[1];
 
 if (nodeMajor < 4) {
   module.exports = require('./legacy');
