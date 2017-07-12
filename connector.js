@@ -21,7 +21,7 @@ class HttpAmazonESConnector extends HttpConnector {
     const endpoint = new AWS.Endpoint(host.host);
 
     // #10
-    if (protocol) endpoint.protocol = protocol;
+    if (protocol) endpoint.protocol = protocol.replace(/:?$/, ":");
     if (port) endpoint.port = port;
 
     this.AWS = AWS;
