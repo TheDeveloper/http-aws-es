@@ -1,4 +1,5 @@
 {
+  "sourceMaps": "both",
   "env": {
     "node4": {
       "presets": [
