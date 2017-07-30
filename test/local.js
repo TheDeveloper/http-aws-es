@@ -14,7 +14,7 @@ var esOptions = {
 var es = require('elasticsearch').Client(esOptions);
 function start() {
   function cb(err, result) {
-    console.log(result);
+    console.log(err, result);
     process.exit();
   }
 
