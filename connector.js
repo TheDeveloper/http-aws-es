@@ -20,7 +20,6 @@ class HttpAmazonESConnector extends HttpConnector {
     const { protocol, port } = host;
     const endpoint = new AWS.Endpoint(host.host);
 
-    // #10
     if (protocol) endpoint.protocol = protocol.replace(/:?$/, ":");
     if (port) endpoint.port = port;
 
@@ -73,12 +72,18 @@ class HttpAmazonESConnector extends HttpConnector {
     request.headers['Host'] = this.endpoint.host;
 
     // load creds
-    // #1, #3, #12, #15, #16, #21
-    const CREDS = await this.getAWSCredentials();
+    let CREDS;
+    try {
+      CREDS = await this.getAWSCredentials();
 
-    // Sign the request (Sigv4)
-    let signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(CREDS, new Date());
+      // Sign the request (Sigv4)
+      let signer = new AWS.Signers.V4(request, 'es');
+      signer.addAuthorization(CREDS, new Date());
+    } catch (e) {
+      if (e && e.message) e.message = `AWS Credentials error: ${e.message}`;
+      cleanUp(e);
+      return () => {};
+    }
 
     let send = new AWS.NodeHttpClient();
     req = send.handleRequest(request, null, function (_incoming) {
