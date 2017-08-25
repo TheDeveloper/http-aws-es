@@ -1,5 +1,5 @@
 # Connection handler for Amazon ES [<img title="Version" src="https://img.shields.io/npm/v/http-aws-es.svg?style=flat-square" />](https://www.npmjs.org/package/http-aws-es)
-Makes elasticsearch-js compatible with Amazon ES. It uses the aws-sdk to make signed requests to an Amazon ES endpoint.
+Makes [elasticsearch-js](https://github.com/elastic/elasticsearch-js) compatible with Amazon ES. It uses the aws-sdk to make signed requests to an Amazon ES endpoint.
 
 ## Installation
 ```bash
