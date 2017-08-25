@@ -26,6 +26,7 @@ class HttpAmazonESConnector extends HttpConnector {
     this.AWS = AWS;
     this.awsConfig = config.awsConfig || AWS.config;
     this.endpoint = endpoint;
+    this.httpOptions = config.httpOptions || this.awsConfig.httpOptions;
   }
 
   async request(params, cb) {
@@ -87,7 +88,7 @@ class HttpAmazonESConnector extends HttpConnector {
     }
 
     let send = new AWS.NodeHttpClient();
-    req = send.handleRequest(request, null, function (_incoming) {
+    req = send.handleRequest(request, this.httpOptions, function (_incoming) {
       incoming = _incoming;
       status = incoming.statusCode;
       headers = incoming.headers;
