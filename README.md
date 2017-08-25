@@ -9,24 +9,33 @@ npm install --save http-aws-es aws-sdk elasticsearch
 
 ## Usage
 ```javascript
-// configure the region for aws-sdk
-let AWS = require('aws-sdk');
-AWS.config.update({ region: 'us-east-1' });
-
 // create an elasticsearch client for your Amazon ES
-var es = require('elasticsearch').Client({
+let es = require('elasticsearch').Client({
   hosts: [ 'https://amazon-es-host.us-east-1.es.amazonaws.com' ],
   connectionClass: require('http-aws-es')
 });
 ```
 
-## Credentials
-The connector uses aws-sdk's default credential behaviour to obtain credentials from your environment. If you would like to set credentials manually, you can set them on aws-sdk:
+## Region + Credentials
+The connector uses aws-sdk's default behaviour to obtain region + credentials from your environment. If you would like to set these manually, you can set them on aws-sdk:
 
 ```javascript
+let AWS = require('aws-sdk');
 AWS.config.update({
-  credentials: new AWS.Credentials(accessKeyId, secretAccessKey)
+  credentials: new AWS.Credentials(accessKeyId, secretAccessKey),
+  region: 'us-east-1'
 });
+```
+
+## Options
+```javascript
+let options = {
+  hosts: [], // array of amazon es hosts (required)
+  connectionClass: require('http-aws-es'), // use this connector (required)
+  awsConfig: new AWS.Config({ region }), // set an aws config e.g. for multiple clients to different regions
+  httpOptions: {} // set httpOptions on aws-sdk's request. default to aws-sdk's config.httpOptions
+};
+let es = require('elasticsearch').Client(options);
 ```
 
 ## Test
