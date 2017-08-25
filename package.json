@@ -37,7 +37,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "rm -rf dist; mkdir dist; babel ./connector.js -o dist/connector.js",
-    "test": "npx -p node-bin@4 -- node test/local"
+    "test": "node test/local"
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
   "license": "MIT"
