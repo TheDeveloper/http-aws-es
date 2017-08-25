@@ -24,6 +24,7 @@ class HttpAmazonESConnector extends HttpConnector {
     if (port) endpoint.port = port;
 
     this.AWS = AWS;
+    this.awsConfig = config.awsConfig || AWS.config;
     this.endpoint = endpoint;
   }
 
@@ -65,7 +66,7 @@ class HttpAmazonESConnector extends HttpConnector {
     for (let p in reqParams) {
       request[p] = reqParams[p];
     }
-    request.region = AWS.config.region;
+    request.region = this.awsConfig.region;
     if (params.body) request.body = params.body;
     if (!request.headers) request.headers = {};
     request.headers['presigned-expires'] = false;
@@ -117,10 +118,10 @@ class HttpAmazonESConnector extends HttpConnector {
   }
 
   getAWSCredentials() {
-    const { AWS } = this;
+    const { awsConfig } = this;
 
     return new Promise((resolve, reject) => {
-      AWS.config.getCredentials((err, creds) => {
+      awsConfig.getCredentials((err, creds) => {
         if (err) return reject(err);
         return resolve(creds);
       });
