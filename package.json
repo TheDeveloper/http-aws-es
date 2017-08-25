@@ -16,9 +16,9 @@
     "extension",
     "sign"
   ],
-  "main": "index.js",
+  "main": "dist/connector.js",
   "dependencies": {
-    "babel-runtime": "^6.23.0"
+    "babel-runtime": "^6.26.0"
   },
   "peerDependencies": {
     "aws-sdk": "^2.83.0",
@@ -36,16 +36,8 @@
   },
   "scripts": {
     "prepublish": "npm run build",
-    "build": "npm run build-node4; npm run build-node6; npm run build-node8; npm run build-legacy",
-    "test": "npm run test-node8 --",
-    "test-node8": "npx -p node-bin@8 -- node ./test/local",
-    "test-node6": "npx -p node-bin@6 -- node ./test/local",
-    "test-node4": "npx -p node-bin@4 -- node ./test/local",
-    "test-legacy": "npx -p node-bin@0.10 -- node ./test/local",
-    "build-node4": "BABEL_ENV=node4 babel ./connector.js -o ./node4.js",
-    "build-node6": "BABEL_ENV=node6 babel ./connector.js -o ./node6.js",
-    "build-node8": "BABEL_ENV=node8 babel ./connector.js -o ./node8.js",
-    "build-legacy": "BABEL_ENV=legacy babel ./connector.js -o ./legacy.js"
+    "build": "rm -rf dist; mkdir dist; babel ./connector.js -o dist/connector.js",
+    "test": "npx -p node-bin@4 -- node test/local"
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
   "license": "MIT"

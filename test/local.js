@@ -7,7 +7,7 @@ var hosts = [ argv.endpoint ];
 
 var esOptions = {
   hosts: hosts,
-  connectionClass: require('../index'),
+  connectionClass: require('..'),
   log: 'trace'
 };
 

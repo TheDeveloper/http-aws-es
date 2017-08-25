@@ -31,6 +31,5 @@ AWS.config.update({
 
 ## Test
 ```bash
-# run with node 8
 npm test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
 ```

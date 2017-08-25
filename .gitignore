@@ -1,7 +1,4 @@
 node_modules
 .DS_Store
-node*.js
-legacy.js
 .vscode
-
-npm-debug.log
+*.log
