@@ -16,9 +16,8 @@
     "extension",
     "sign"
   ],
-  "main": "dist/connector.js",
+  "main": "connector.js",
   "dependencies": {
-    "babel-runtime": "^6.26.0"
   },
   "peerDependencies": {
     "aws-sdk": "^2.83.0",
@@ -26,18 +25,14 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.83.0",
-    "babel-cli": "^6.24.1",
-    "babel-eslint": "^7.2.3",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.0",
     "elasticsearch": "^13.2.0",
     "eslint": "^4.2.0",
     "minimist": "^1.2.0"
   },
   "scripts": {
-    "prepublish": "npm run build",
-    "build": "rm -rf dist; mkdir dist; babel ./connector.js -o dist/connector.js",
-    "test": "node test/local"
+    "test": "node test/local",
+    "posttest": "npm run lint",
+    "lint": "eslint ."
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
   "license": "MIT"

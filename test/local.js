@@ -1,7 +1,7 @@
 var argv = require('minimist')(process.argv.slice(2));
 
 var AWS = require('aws-sdk');
-AWS.config.update({ region: argv.region });
+AWS.config.update({ region: argv.region, profile: argv.profile }); 
 
 var hosts = [ argv.endpoint ];
 
@@ -22,4 +22,3 @@ function start() {
 }
 
 start();
-
