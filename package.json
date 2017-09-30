@@ -17,20 +17,23 @@
     "sign"
   ],
   "main": "connector.js",
-  "dependencies": {
-  },
   "peerDependencies": {
     "aws-sdk": "^2.83.0",
     "elasticsearch": "^13.2.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.83.0",
+    "chai": "^4.1.2",
     "elasticsearch": "^13.2.0",
     "eslint": "^4.2.0",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.2.1",
+    "sinon": "^4.0.0"
   },
   "scripts": {
-    "test": "node test/local",
+    "test": "nyc --all mocha",
+    "integration-test": "mocha test/integration",
     "posttest": "npm run lint",
     "lint": "eslint ."
   },

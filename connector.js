@@ -34,14 +34,18 @@ class HttpAmazonESConnector extends HttpConnector {
 
   request(params, cb) {
     const reqParams = this.makeReqParams(params);
-    const request = this.createRequest(params, reqParams);
-    const signer = new AWS.Signers.V4(request, 'es');
 
     let req;
     let status = 0;
     let headers = {};
     let response;
     let incoming;
+    let cancelled;
+
+    const cancel = () => {
+      cancelled = true;
+      req && req.abort();
+    };
 
     // general clean-up procedure to run after the request
     // completes, has an error, or is aborted.
@@ -58,10 +62,20 @@ class HttpAmazonESConnector extends HttpConnector {
     };
 
     // load creds
-    return this.getAWSCredentials()
+    this.getAWSCredentials()
+      .catch(e => {
+        if (e && e.message) e.message = `AWS Credentials error: ${e.message}`;
+        throw e;
+      })
       .then(creds => {
+        if (cancelled) {
+          return;
+        }
+
+        const request = this.createRequest(params, reqParams);
+
         // Sign the request (Sigv4)
-        signer.addAuthorization(creds, new Date());
+        this.signRequest(request, creds);
 
         req = this.httpClient.handleRequest(request, this.httpOptions, function (_incoming) {
           incoming = _incoming;
@@ -83,19 +97,12 @@ class HttpAmazonESConnector extends HttpConnector {
           incoming.on('end', cleanUp);
         }, cleanUp);
 
-        req.on('error', cleanUp);
-
         req.setNoDelay(true);
         req.setSocketKeepAlive(true);
       })
-      .then(() => {
-        return () => req.abort();
-      })
-      .catch(e => {
-        if (e && e.message) e.message = `AWS Credentials error: ${e.message}`;
-        cleanUp(e);
-        return () => {};
-      });
+      .catch(cleanUp);
+
+      return cancel;
   }
 
   getAWSCredentials() {
@@ -121,6 +128,12 @@ class HttpAmazonESConnector extends HttpConnector {
 
     return request;
   }
+
+  signRequest(request, creds) {
+    const signer = new AWS.Signers.V4(request, 'es');
+    signer.addAuthorization(creds, new Date());
+  }
+
 }
 
 module.exports = HttpAmazonESConnector;
