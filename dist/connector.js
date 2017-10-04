@@ -124,7 +124,10 @@ var HttpAmazonESConnector = function (_HttpConnector) {
                   request[p] = reqParams[p];
                 }
                 request.region = this.awsConfig.region;
-                if (params.body) request.body = params.body;
+                if (params.body) {
+                  request.body = params.body;
+                  request.headers['Content-Length'] = params.body.length;
+                }
                 if (!request.headers) request.headers = {};
                 request.headers['presigned-expires'] = false;
                 request.headers['Host'] = this.endpoint.host;
