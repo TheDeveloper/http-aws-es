@@ -123,10 +123,11 @@ class HttpAmazonESConnector extends HttpConnector {
     request.region = this.awsConfig.region;
     if (!request.headers) request.headers = {};
     let body = params.body;
+
     if (body) {
       let contentLength = Buffer.isBuffer(body)
-      ? body.byteLength()
-      : body.length;
+        ? body.byteLength()
+        : body.length;
       request.headers['Content-Length'] = contentLength;
       request.body = body;
     }
@@ -140,7 +141,6 @@ class HttpAmazonESConnector extends HttpConnector {
     const signer = new AWS.Signers.V4(request, 'es');
     signer.addAuthorization(creds, new Date());
   }
-
 }
 
 module.exports = HttpAmazonESConnector;

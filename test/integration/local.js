@@ -45,4 +45,4 @@ describe('ES', function() {
       return client.clearScroll(params);
     });
   });
-})
+});
