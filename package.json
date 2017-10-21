@@ -18,16 +18,16 @@
   ],
   "main": "connector.js",
   "peerDependencies": {
-    "aws-sdk": "^2.83.0",
+    "aws-sdk": "^2.138.0",
     "elasticsearch": "^13.2.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.83.0",
+    "aws-sdk": "^2.138.0",
     "chai": "^4.1.2",
-    "elasticsearch": "^13.2.0",
-    "eslint": "^4.2.0",
+    "elasticsearch": "^13.3.1",
+    "eslint": "^4.9.0",
     "minimist": "^1.2.0",
-    "mocha": "^3.5.3",
+    "mocha": "^4.0.1",
     "nyc": "^11.2.1",
     "sinon": "^4.0.0"
   },
