@@ -14,18 +14,35 @@ const esOptions = {
 
 const client = es.Client(esOptions);
 
-it('should be able to connect', function (done) {
+describe('ES', function() {
   this.timeout(10000);
   this.slow(1000);
 
-  client.cluster.health(function (err, res) {
-    if (err) {
-      done(err);
-      return;
-    }
-
-    console.log(res);
-
-    done();
+  it('should be able to connect', done => {
+    client.cluster.health(function (err, res) {
+      if (err) {
+        done(err);
+        return;
+      }
+      
+      console.log(res);
+      
+      done();
+    });
   });
-});
+
+  it('can clearScroll()', () => {
+    let params = {
+      scroll: '10s',
+      size: 0
+    };
+
+    return client.search(params)
+    .then(result => {
+      params = {
+        scrollId: [ result._scroll_id ]
+      };
+      return client.clearScroll(params);
+    });
+  });
+})
