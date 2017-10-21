@@ -68,8 +68,15 @@ class HttpAmazonESConnector extends HttpConnector {
       request[p] = reqParams[p];
     }
     request.region = this.awsConfig.region;
-    if (params.body) request.body = params.body;
     if (!request.headers) request.headers = {};
+    let body = params.body;
+    if (body) {
+      let contentLength = Buffer.isBuffer(body)
+      ? body.byteLength()
+      : body.length;
+      request.headers['Content-Length'] = contentLength;
+      request.body = body;
+    }
     request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
