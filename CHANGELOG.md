@@ -1,3 +1,6 @@
+### 3.1.2
+* Fix unicode issue. [#43][43]
+
 ### 3.1.1
 * Fix DELETEs with request body e.g. `clearScroll()`. [#19][19] [#41][41]
 * Reduce dependency footprint. [#40][40]
@@ -20,6 +23,7 @@
 
 * Added `credentials` option for passing in an AWS `Credentials` object.
 
+[43]: https://github.com/TheDeveloper/http-aws-es/issues/43
 [41]: https://github.com/TheDeveloper/http-aws-es/pull/41
 [19]: https://github.com/TheDeveloper/http-aws-es/issues/19
 [40]: https://github.com/TheDeveloper/http-aws-es/pull/40
