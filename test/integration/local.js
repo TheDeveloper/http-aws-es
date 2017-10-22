@@ -45,4 +45,15 @@ describe('ES', function() {
       return client.clearScroll(params);
     });
   });
+
+  it('handles unicode', () => {
+    let params = {
+      index: '*',
+      size: 0,
+      body: {
+        query: { query_string: { query: "ü" } }
+      }
+    };
+    return client.search(params);
+  });
 });
