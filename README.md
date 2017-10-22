@@ -40,5 +40,7 @@ let es = require('elasticsearch').Client(options);
 
 ## Test
 ```bash
-npm test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
+npm test
+# test against a real endpoint
+AWS_PROFILE=your-profile npm run integration-test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
 ```
