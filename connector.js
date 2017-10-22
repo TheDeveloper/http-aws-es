@@ -102,7 +102,7 @@ class HttpAmazonESConnector extends HttpConnector {
       })
       .catch(cleanUp);
 
-      return cancel;
+    return cancel;
   }
 
   getAWSCredentials() {
