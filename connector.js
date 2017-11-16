@@ -14,6 +14,7 @@
 const AWS = require('aws-sdk');
 const HttpConnector = require('elasticsearch/src/lib/connectors/http');
 const zlib = require('zlib');
+const aws4  = require('aws4')
 
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
@@ -138,8 +139,7 @@ class HttpAmazonESConnector extends HttpConnector {
   }
 
   signRequest(request, creds) {
-    const signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(creds, new Date());
+    aws4.sign(request, creds);
   }
 }
 
