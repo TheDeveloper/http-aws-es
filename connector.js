@@ -14,6 +14,7 @@
 const AWS = require('aws-sdk');
 const HttpConnector = require('elasticsearch/src/lib/connectors/http');
 const zlib = require('zlib');
+const aws4  = require('aws4')
 
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
@@ -26,7 +27,16 @@ class HttpAmazonESConnector extends HttpConnector {
     if (protocol) endpoint.protocol = protocol.replace(/:?$/, ":");
     if (port) endpoint.port = port;
 
-    this.awsConfig = config.awsConfig || AWS.config;
+    if(config.amazonES) {
+      this.awsConfig = new AWS.Config({
+        accessKeyId: config.amazonES.accessKey, secretAccessKey: config.amazonES.secretKey, region: config.amazonES.region
+      });
+    } else if (config.awsConfig){
+      this.awsConfig = config.awsConfig;
+    } else {
+      this.awsConfig = AWS.config;
+    }
+
     this.endpoint = endpoint;
     this.httpOptions = config.httpOptions || this.awsConfig.httpOptions;
     this.httpClient = new AWS.NodeHttpClient();
@@ -138,8 +148,7 @@ class HttpAmazonESConnector extends HttpConnector {
   }
 
   signRequest(request, creds) {
-    const signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(creds, new Date());
+    aws4.sign(request, creds);
   }
 }
 
