@@ -33,3 +33,4 @@
 [37]: https://github.com/TheDeveloper/http-aws-es/issues/37
 [8]: https://github.com/TheDeveloper/http-aws-es/pull/8
 [35]: https://github.com/TheDeveloper/http-aws-es/issues/35
+[42]: https://github.com/TheDeveloper/http-aws-es/issues/42
