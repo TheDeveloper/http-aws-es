@@ -1,3 +1,6 @@
+### 4.0.0
+* Use AWS XHRClient in browser. [#42][42]
+
 ### 3.1.2
 * Fix unicode issue. [#43][43]
 
