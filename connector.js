@@ -13,7 +13,7 @@
 
 const AWS = require('aws-sdk');
 const HttpConnector = require('elasticsearch/src/lib/connectors/http');
-const zlib = require('zlib');
+const HttpClient = require('./src/node');
 
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
@@ -29,17 +29,13 @@ class HttpAmazonESConnector extends HttpConnector {
     this.awsConfig = config.awsConfig || AWS.config;
     this.endpoint = endpoint;
     this.httpOptions = config.httpOptions || this.awsConfig.httpOptions;
-    this.httpClient = new AWS.NodeHttpClient();
+    this.httpClient = new HttpClient();
   }
 
   request(params, cb) {
     const reqParams = this.makeReqParams(params);
 
     let req;
-    let status = 0;
-    let headers = {};
-    let response;
-    let incoming;
     let cancelled;
 
     const cancel = () => {
@@ -47,18 +43,9 @@ class HttpAmazonESConnector extends HttpConnector {
       req && req.abort();
     };
 
-    // general clean-up procedure to run after the request
-    // completes, has an error, or is aborted.
-    const cleanUp = (err) => {
-      req && req.removeAllListeners();
-      incoming && incoming.removeAllListeners();
-
+    const done = (err, response, status, headers) => {
       this.log.trace(params.method, reqParams, params.body, response, status);
-      if (err instanceof Error) {
-        cb(err);
-      } else {
-        cb(null, response, status, headers);
-      }
+      cb(err, response, status, headers);
     };
 
     // load creds
@@ -73,34 +60,11 @@ class HttpAmazonESConnector extends HttpConnector {
         }
 
         const request = this.createRequest(params, reqParams);
-
         // Sign the request (Sigv4)
         this.signRequest(request, creds);
-
-        req = this.httpClient.handleRequest(request, this.httpOptions, function (_incoming) {
-          incoming = _incoming;
-          status = incoming.statusCode;
-          headers = incoming.headers;
-          response = '';
-
-          let encoding = (headers['content-encoding'] || '').toLowerCase();
-          if (encoding === 'gzip' || encoding === 'deflate') {
-            incoming = incoming.pipe(zlib.createUnzip());
-          }
-
-          incoming.setEncoding('utf8');
-          incoming.on('data', function (d) {
-            response += d;
-          });
-
-          incoming.on('error', cleanUp);
-          incoming.on('end', cleanUp);
-        }, cleanUp);
-
-        req.setNoDelay(true);
-        req.setSocketKeepAlive(true);
+        req = this.httpClient.handleRequest(request, this.httpOptions, done);
       })
-      .catch(cleanUp);
+      .catch(done);
 
     return cancel;
   }
@@ -131,7 +95,6 @@ class HttpAmazonESConnector extends HttpConnector {
       request.headers['Content-Length'] = contentLength;
       request.body = body;
     }
-    request.headers['presigned-expires'] = false;
     request.headers['Host'] = this.endpoint.host;
 
     return request;
