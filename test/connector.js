@@ -81,8 +81,8 @@ describe('request', function () {
     fakeReq.setSocketKeepAlive = sinon.stub();
 
     sinon.stub(this.connector.httpClient, 'handleRequest')
-      .callsFake(function(request, options, callback, errCallback) {
-        errCallback(error);
+      .callsFake(function(request, options, callback) {
+        callback(error);
         return fakeReq;
       });
 

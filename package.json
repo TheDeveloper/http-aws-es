@@ -23,19 +23,25 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.138.0",
+    "browserify": "^14.5.0",
     "chai": "^4.1.2",
     "elasticsearch": "^13.3.1",
     "eslint": "^4.9.0",
+    "express": "^4.16.2",
     "minimist": "^1.2.0",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
+    "puppeteer": "^0.12.0",
     "sinon": "^4.0.0"
   },
   "scripts": {
     "test": "nyc --all mocha",
     "integration-test": "mocha test/integration",
     "posttest": "npm run lint",
-    "lint": "eslint ."
+    "lint": "eslint connector.js src"
+  },
+  "browser": {
+    "./src/node.js": "./src/xhr.js"
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
   "license": "MIT"
