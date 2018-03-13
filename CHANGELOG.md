@@ -1,3 +1,6 @@
+## 5.0.0
+* Depends on Elasticsearch-js 14.2.0 instead of 13.2.0 [#49][49]
+
 ### 4.0.0
 * Use AWS XHRClient in browser. [#42][42]
 
