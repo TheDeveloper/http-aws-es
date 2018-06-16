@@ -27,6 +27,18 @@ AWS.config.update({
 });
 ```
 
+## Region + Credentials + SessionToken
+The connector uses aws-sdk's default behaviour to obtain region + credentials from your environment. If you would like to set these manually, you can set them on aws-sdk. This example uses a sessionToken together with accessKey and secret. This way you can also auth against temporary credentials provided by
+AWS Cognito. Means, you can access ES with the Cognito Federated Entities authRole of the loggedIn User. 
+
+```javascript
+let AWS = require('aws-sdk');
+AWS.config.update({
+  credentials: new AWS.Credentials(accessKeyId, secretAccessKey, sessionToken),
+  region: 'us-east-1'
+});
+```
+
 ## Options
 ```javascript
 let options = {
