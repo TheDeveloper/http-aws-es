@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk/lib/core');
 const zlib = require('zlib');
 
 class NodeHttpClient {
