@@ -11,7 +11,7 @@
  * @class HttpConnector
  */
 
-const AWS = require('aws-sdk/lib/core');
+const AWS = require('aws-sdk/global');
 const HttpConnector = require('elasticsearch/src/lib/connectors/http');
 const HttpClient = require('./src/node');
 
