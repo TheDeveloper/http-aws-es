@@ -28,6 +28,8 @@ class HttpAmazonESConnector extends HttpConnector {
 
     this.awsConfig = config.awsConfig || AWS.config;
     this.endpoint = endpoint;
+    this.signatureHost = config.signatureHost;
+
     this.httpOptions = config.httpOptions || this.awsConfig.httpOptions;
     this.httpClient = new HttpClient();
   }
@@ -62,6 +64,7 @@ class HttpAmazonESConnector extends HttpConnector {
         const request = this.createRequest(params, reqParams);
         // Sign the request (Sigv4)
         this.signRequest(request, creds);
+        request.headers['Host'] = this.endpoint.host;
         req = this.httpClient.handleRequest(request, this.httpOptions, done);
       })
       .catch(done);
@@ -95,7 +98,7 @@ class HttpAmazonESConnector extends HttpConnector {
       request.headers['Content-Length'] = contentLength;
       request.body = body;
     }
-    request.headers['Host'] = this.endpoint.host;
+    request.headers['Host'] = this.signatureHost || this.endpoint.host;
 
     return request;
   }
