@@ -1,46 +1,87 @@
-# Connection handler for Amazon ES [<img title="Version" src="https://img.shields.io/npm/v/http-aws-es.svg?style=flat-square" />](https://www.npmjs.org/package/http-aws-es)
-Makes [elasticsearch-js](https://github.com/elastic/elasticsearch-js) compatible with Amazon ES. It uses the aws-sdk to make signed requests to an Amazon ES endpoint.
+# aws-elasticsearch-connector
+
+[![Build Status](https://travis-ci.org/compwright/aws-elasticsearch-connector.png?branch=master)](https://travis-ci.org/compwright/aws-elasticsearch-connector)
+[![Code Climate](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/badges/gpa.svg)](https://codeclimate.com/github/compwright/aws-elasticsearch-connector)
+[![Test Coverage](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/badges/coverage.svg)](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/coverage)
+[![Dependency Status](https://img.shields.io/david/compwright/aws-elasticsearch-connector.svg?style=flat-square)](https://david-dm.org/compwright/aws-elasticsearch-connector)
+[![Download Status](https://img.shields.io/npm/dm/aws-elasticsearch-connector.svg?style=flat-square)](https://www.npmjs.com/package/aws-elasticsearch-connector)
+
+A tiny [Amazon Signature Version 4](https://www.npmjs.com/package/aws4) connection class for [Elasticsearch.js 16.x](https://www.npmjs.com/package/elasticsearch), for compatibility with AWS Elasticsearch and IAM authentication.
+
+> This library is drop-in replacement for [http-aws-es](https://www.npmjs.com/package/http-aws-es), which is no longer actively maintained.
 
 ## Installation
+
 ```bash
-# Install the connector, elasticsearch client and aws-sdk
-npm install --save http-aws-es aws-sdk elasticsearch
+npm install --save aws-elasticsearch-connector elasticsearch aws-sdk
 ```
 
-## Usage
+## Example usage
+
+### With specific credentials
+
 ```javascript
-// create an elasticsearch client for your Amazon ES
-let es = require('elasticsearch').Client({
-  hosts: [ 'https://amazon-es-host.us-east-1.es.amazonaws.com' ],
-  connectionClass: require('http-aws-es')
+const elasticsearch = require('elasticsearch');
+
+const client = new elasticsearch.Client({
+  hosts: [
+    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  ],
+  connectionClass: require('aws-elasticsearch-connector'),
+  awsConfig: {
+    credentials: {
+      accessKeyId: 'foo',
+      secretAccessKey: 'bar',
+      sessionToken: 'baz' // optional
+    }
+  }
 });
 ```
 
-## Region + Credentials
-The connector uses aws-sdk's default behaviour to obtain region + credentials from your environment. If you would like to set these manually, you can set them on aws-sdk:
+### With credentials from AWS.Config
 
 ```javascript
-let AWS = require('aws-sdk');
+const AWS = require('aws-sdk');
+const elasticsearch = require('elasticsearch');
+
+// Load AWS profile credentials
 AWS.config.update({
-  credentials: new AWS.Credentials(accessKeyId, secretAccessKey),
-  region: 'us-east-1'
+  profile: 'my-profile'
+});
+
+const client = new elasticsearch.Client({
+  hosts: [
+    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  ],
+  connectionClass: require('aws-elasticsearch-connector')
 });
 ```
 
-## Options
+### With credentials from the environment
+
+```env
+AWS_ACCESS_KEY_ID=foo      # alias: AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=bar  # alias: AWS_SECRET_KEY
+AWS_SESSION_TOKEN=baz
+```
+
 ```javascript
-let options = {
-  hosts: [], // array of amazon es hosts (required)
-  connectionClass: require('http-aws-es'), // use this connector (required)
-  awsConfig: new AWS.Config({ region }), // set an aws config e.g. for multiple clients to different regions
-  httpOptions: {} // set httpOptions on aws-sdk's request. default to aws-sdk's config.httpOptions
-};
-let es = require('elasticsearch').Client(options);
+const elasticsearch = require('elasticsearch');
+
+const client = new elasticsearch.Client({
+  hosts: [
+    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  ],
+  connectionClass: require('aws-elasticsearch-connector'),
+});
 ```
 
 ## Test
+
 ```bash
 npm test
-# test against a real endpoint
-AWS_PROFILE=your-profile npm run integration-test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
+
+# Run integration tests against a real endpoint
+AWS_PROFILE=your-profile npm run test:integration -- \
+  --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com
 ```

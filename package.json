@@ -1,48 +1,71 @@
 {
-  "name": "http-aws-es",
+  "name": "aws-elasticsearch-connector",
   "version": "6.0.0",
-  "description": "Use the elasticsearch-js client with Amazon ES",
-  "repository": "https://github.com/TheDeveloper/http-aws-es",
-  "bugs": "https://github.com/TheDeveloper/http-aws-es/issues",
+  "description": "A tiny Amazon Signature Version 4 connection class for Elasticsearch.js 16.x, for compatibility with AWS Elasticsearch and IAM authentication. NOTE: This library is drop-in replacement for http-aws-es, which is no longer actively maintained.",
+  "repository": "https://github.com/compwright/aws-elasticsearch-connector",
+  "bugs": "https://github.com/compwright/aws-elasticsearch-connector/issues",
   "keywords": [
     "elasticsearch",
     "elasticsearch-js",
+    "elasticsearch-js-legacy",
     "aws-es",
     "aws",
+    "aws4",
     "amazon",
     "es",
     "http",
     "connector",
     "extension",
-    "sign"
+    "sign",
+    "http-aws-es",
+    "HttpConnection"
   ],
-  "main": "connector.js",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "publish": "git push origin --tags && npm run changelog && git push origin",
+    "release:pre": "npm version prerelease && npm publish --tag pre",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
+    "lint": "semistandard src/*.js tests/*.js --fix",
+    "pretest": "npm run lint",
+    "test": "nyc --all mocha tests/AmazonElasticsearchHttpConnector.test.js",
+    "test:integration": "mocha tests/integration.test.js"
+  },
+  "author": {
+    "name": "Jonathon Hill",
+    "email": "jonathon@compwright.com",
+    "url": "https://compwright.com"
+  },
+  "license": "MIT",
+  "semistandard": {
+    "env": [
+      "mocha"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.js"
+    ]
+  },
+  "dependencies": {
+    "aws4": "^1.8.0"
+  },
   "peerDependencies": {
-    "aws-sdk": "^2.138.0",
-    "elasticsearch": "^15.0.0"
+    "aws-sdk": "^2.512.0",
+    "elasticsearch": "^16.3.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.138.0",
-    "browserify": "^14.5.0",
-    "chai": "^4.1.2",
-    "elasticsearch": "^15.0.0",
-    "eslint": "^4.9.0",
-    "express": "^4.16.2",
+    "aws-sdk": "^2.512.0",
+    "elasticsearch": "^16.3.0",
+    "eslint": "^6.1.0",
     "minimist": "^1.2.0",
-    "mocha": "^4.0.1",
-    "nyc": "^11.2.1",
-    "puppeteer": "^0.12.0",
-    "sinon": "^4.0.0"
-  },
-  "scripts": {
-    "test": "nyc --all mocha",
-    "integration-test": "mocha test/integration",
-    "posttest": "npm run lint",
-    "lint": "eslint connector.js src"
-  },
-  "browser": {
-    "./src/node.js": "./src/xhr.js"
-  },
-  "author": "Geoff Wagstaff <geoff@gosquared.com>",
-  "license": "MIT"
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1",
+    "semistandard": "^13.0.1"
+  }
 }
