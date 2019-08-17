@@ -1,12 +1,12 @@
+const { Connection } = require('@elastic/elasticsearch');
 const aws4 = require('aws4');
 const AWS = require('aws-sdk');
-const HttpConnector = require('elasticsearch/src/lib/connectors/http');
 
-class AmazonElasticsearchHttpConnector extends HttpConnector {
-  constructor (host, config) {
-    super(host, config);
+class AmazonConnection extends Connection {
+  constructor (options) {
+    super(options);
 
-    const awsConfig = config.awsConfig || AWS.config;
+    const awsConfig = options.awsConfig || AWS.config;
 
     this.credentials = {
       accessKeyId: awsConfig.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
@@ -15,8 +15,8 @@ class AmazonElasticsearchHttpConnector extends HttpConnector {
     };
   }
 
-  makeReqParams (params) {
-    const req = super.makeReqParams(params);
+  buildRequestObject (params) {
+    const req = super.buildRequestObject(params);
 
     if (!req.headers) {
       req.headers = {};
@@ -37,4 +37,4 @@ class AmazonElasticsearchHttpConnector extends HttpConnector {
   }
 }
 
-module.exports = AmazonElasticsearchHttpConnector;
+module.exports = AmazonConnection;

@@ -6,14 +6,14 @@
 [![Dependency Status](https://img.shields.io/david/compwright/aws-elasticsearch-connector.svg?style=flat-square)](https://david-dm.org/compwright/aws-elasticsearch-connector)
 [![Download Status](https://img.shields.io/npm/dm/aws-elasticsearch-connector.svg?style=flat-square)](https://www.npmjs.com/package/aws-elasticsearch-connector)
 
-A tiny [Amazon Signature Version 4](https://www.npmjs.com/package/aws4) connection class for [Elasticsearch.js 16.x](https://www.npmjs.com/package/elasticsearch), for compatibility with AWS Elasticsearch and IAM authentication.
+A tiny [Amazon Signature Version 4](https://www.npmjs.com/package/aws4) connection class for the official [Elasticsearch Node.js client](https://www.npmjs.com/package/elasticsearch), for compatibility with AWS Elasticsearch and IAM authentication.
 
-> This library is drop-in replacement for [http-aws-es](https://www.npmjs.com/package/http-aws-es), which is no longer actively maintained.
+> For legacy [Elasticsearch.js 16.x](https://www.npmjs.com/package/elasticsearch) support, use version 7.x of this library.
 
 ## Installation
 
 ```bash
-npm install --save aws-elasticsearch-connector elasticsearch aws-sdk
+npm install --save aws-elasticsearch-connector @elastic/elasticsearch aws-sdk
 ```
 
 ## Example usage
@@ -21,13 +21,11 @@ npm install --save aws-elasticsearch-connector elasticsearch aws-sdk
 ### With specific credentials
 
 ```javascript
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 
-const client = new elasticsearch.Client({
-  hosts: [
-    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  ],
-  connectionClass: require('aws-elasticsearch-connector'),
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  Connection: require('aws-elasticsearch-connector'),
   awsConfig: {
     credentials: {
       accessKeyId: 'foo',
@@ -42,18 +40,16 @@ const client = new elasticsearch.Client({
 
 ```javascript
 const AWS = require('aws-sdk');
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 
 // Load AWS profile credentials
 AWS.config.update({
   profile: 'my-profile'
 });
 
-const client = new elasticsearch.Client({
-  hosts: [
-    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  ],
-  connectionClass: require('aws-elasticsearch-connector')
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  Connection: require('aws-elasticsearch-connector')
 });
 ```
 
@@ -66,13 +62,11 @@ AWS_SESSION_TOKEN=baz
 ```
 
 ```javascript
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 
-const client = new elasticsearch.Client({
-  hosts: [
-    'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  ],
-  connectionClass: require('aws-elasticsearch-connector'),
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
+  Connection: require('aws-elasticsearch-connector'),
 });
 ```
 

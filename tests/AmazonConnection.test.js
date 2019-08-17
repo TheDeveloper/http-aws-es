@@ -1,15 +1,15 @@
 'use strict';
 
+const { Connection } = require('@elastic/elasticsearch');
 const assert = require('assert');
 const AWS = require('aws-sdk');
-const Host = require('elasticsearch/src/lib/host');
-const HttpConnector = require('elasticsearch/src/lib/connectors/http');
+const { URL } = require('url');
 
-const AmazonElasticsearchHttpConnector = require('../src');
+const AmazonConnection = require('../src');
 
-describe('AmazonElasticsearchHttpConnector', function () {
-  it('extends HttpConnector', function () {
-    assert(AmazonElasticsearchHttpConnector.prototype instanceof HttpConnector);
+describe('AmazonConnection', function () {
+  it('extends Connection', function () {
+    assert(AmazonConnection.prototype instanceof Connection);
   });
 
   describe('constructor()', function () {
@@ -20,7 +20,8 @@ describe('AmazonElasticsearchHttpConnector', function () {
         sessionToken: 'baz'
       };
 
-      const connector = new AmazonElasticsearchHttpConnector(new Host(), {
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com'),
         awsConfig: { credentials }
       });
 
@@ -36,7 +37,9 @@ describe('AmazonElasticsearchHttpConnector', function () {
 
       AWS.config.update({ credentials });
 
-      const connector = new AmazonElasticsearchHttpConnector(new Host(), {});
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com')
+      });
       assert.deepStrictEqual(connector.credentials, credentials);
     });
 
@@ -51,17 +54,16 @@ describe('AmazonElasticsearchHttpConnector', function () {
         sessionToken: 'baz'
       };
 
-      const connector = new AmazonElasticsearchHttpConnector(new Host(), {});
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com')
+      });
       assert.deepStrictEqual(connector.credentials, credentials);
     });
   });
 
-  describe('makeReqParams()', function () {
-    const host = new Host({
-      host: 'foo.us-east-1.es.amazonaws.com'
-    });
-
-    const connector = new AmazonElasticsearchHttpConnector(host, {
+  describe('buildRequestObject()', function () {
+    const connector = new AmazonConnection({
+      url: new URL('https://foo.us-east-1.es.amazonaws.com'),
       awsConfig: {
         credentials: {
           accessKeyId: 'foo',
@@ -72,7 +74,7 @@ describe('AmazonElasticsearchHttpConnector', function () {
     });
 
     it('sets the Host header without the port appended', function () {
-      const req = connector.makeReqParams({
+      const req = connector.buildRequestObject({
         method: 'GET',
         path: '/_cluster/health',
         query: {},
@@ -80,11 +82,11 @@ describe('AmazonElasticsearchHttpConnector', function () {
         headers: {}
       });
 
-      assert.strictEqual(req.headers['Host'], host.host);
+      assert.strictEqual(req.headers['Host'], 'foo.us-east-1.es.amazonaws.com');
     });
 
     it('sets the Content-Length: 0 header when there is no body', function () {
-      const req = connector.makeReqParams({
+      const req = connector.buildRequestObject({
         method: 'POST',
         path: '/_cluster/health',
         query: {},
@@ -96,7 +98,7 @@ describe('AmazonElasticsearchHttpConnector', function () {
     });
 
     it('sets the Content-Length header when there is a body', function () {
-      const req = connector.makeReqParams({
+      const req = connector.buildRequestObject({
         method: 'POST',
         path: '/_cluster/health',
         query: {},
@@ -109,7 +111,7 @@ describe('AmazonElasticsearchHttpConnector', function () {
     });
 
     it('signs the request', function () {
-      const req = connector.makeReqParams({
+      const req = connector.buildRequestObject({
         method: 'POST',
         path: '/_cluster/health',
         query: {},

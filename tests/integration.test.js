@@ -1,27 +1,35 @@
 'use strict';
 
 const AWS = require('aws-sdk');
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 const argv = require('minimist')(process.argv.slice(2));
+
+const AmazonConnection = require('../src');
 
 AWS.config.update({
   region: argv.region,
   profile: argv.profile
 });
 
-const esOptions = {
-  hosts: [ argv.endpoint ],
-  connectionClass: require('../src'),
+const client = new Client({
+  node: argv.endpoint,
+  Connection: AmazonConnection,
   awsConfig: {
     credentials: {
       accessKeyId: AWS.config.credentials.accessKeyId,
       secretAccessKey: AWS.config.credentials.secretAccessKey
     }
-  },
-  log: 'trace'
-};
+  }
+});
 
-const client = elasticsearch.Client(esOptions);
+client.on('response', (err, res) => {
+  if (err) {
+    console.error('Error:', err);
+  } else {
+    console.log('Request:', res.meta.request);
+    console.log('Response:', res.statusCode, res.body);
+  }
+});
 
 describe('AWS Elasticsearch', function () {
   this.timeout(10000);
@@ -33,35 +41,27 @@ describe('AWS Elasticsearch', function () {
         done(err);
         return;
       }
-
-      console.log(res);
-
       done();
     });
   });
 
   it('can clearScroll()', () => {
-    let params = {
-      scroll: '10s'
-    };
-
-    return client.search(params)
-      .then(result => {
-        params = {
-          scrollId: [ result._scroll_id ]
-        };
-        return client.clearScroll(params);
+    return client.search({ scroll: '10s' }).then(result => {
+      return client.clearScroll({
+        body: {
+          scroll_id: [ result.body._scroll_id ]
+        }
       });
+    });
   });
 
   it('handles unicode', () => {
-    let params = {
+    return client.search({
       index: '*',
       size: 0,
       body: {
         query: { query_string: { query: 'ü' } }
       }
-    };
-    return client.search(params);
+    });
   });
 });

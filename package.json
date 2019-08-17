@@ -33,7 +33,7 @@
     "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
     "lint": "semistandard src/*.js tests/*.js --fix",
     "pretest": "npm run lint",
-    "test": "nyc --all mocha tests/AmazonElasticsearchHttpConnector.test.js",
+    "test": "nyc --all mocha tests/AmazonConnection.test.js",
     "test:integration": "mocha tests/integration.test.js"
   },
   "author": {
@@ -56,12 +56,12 @@
     "aws4": "^1.8.0"
   },
   "peerDependencies": {
-    "aws-sdk": "^2.512.0",
-    "elasticsearch": "^16.3.0"
+    "@elastic/elasticsearch": "^7.3.0",
+    "aws-sdk": "^2.512.0"
   },
   "devDependencies": {
+    "@elastic/elasticsearch": "^7.3.0",
     "aws-sdk": "^2.512.0",
-    "elasticsearch": "^16.3.0",
     "eslint": "^6.1.0",
     "minimist": "^1.2.0",
     "mocha": "^6.2.0",
