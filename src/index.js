@@ -5,13 +5,14 @@ const AWS = require('aws-sdk');
 class AmazonConnection extends Connection {
   constructor (options) {
     super(options);
+    this.awsConfig = options.awsConfig || AWS.config;
+  }
 
-    const awsConfig = options.awsConfig || AWS.config;
-
-    this.credentials = {
-      accessKeyId: awsConfig.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
-      secretAccessKey: awsConfig.credentials.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY,
-      sessionToken: awsConfig.credentials.sessionToken || process.env.AWS_SESSION_TOKEN
+  get credentials () {
+    return {
+      accessKeyId: this.awsConfig.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
+      secretAccessKey: this.awsConfig.credentials.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY,
+      sessionToken: this.awsConfig.credentials.sessionToken || process.env.AWS_SESSION_TOKEN
     };
   }
 
