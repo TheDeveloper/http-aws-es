@@ -5,12 +5,20 @@ const AWS = require('aws-sdk');
 class AmazonConnection extends Connection {
   constructor (options) {
     super(options);
+    this.awsConfig = options.awsConfig || AWS.config;
+  }
 
-    this.config = options.awsConfig || AWS.config;
+  get credentials () {
+    return {
+      accessKeyId: this.awsConfig.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
+      secretAccessKey: this.awsConfig.credentials.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY,
+      sessionToken: this.awsConfig.credentials.sessionToken || process.env.AWS_SESSION_TOKEN
+    };
   }
 
   buildRequestObject (params) {
     const req = super.buildRequestObject(params);
+
     if (!req.headers) {
       req.headers = {};
     }
@@ -26,14 +34,7 @@ class AmazonConnection extends Connection {
       req.headers['Content-Length'] = 0;
     }
 
-    req.service = 'es';
-    const credentials = {
-      accessKeyId: this.config.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
-      secretAccessKey: this.config.credentials.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY,
-      sessionToken: this.config.credentials.sessionToken || process.env.AWS_SESSION_TOKEN
-    };
-
-    return aws4.sign(req, credentials);
+    return aws4.sign(req, this.credentials);
   }
 }
 
