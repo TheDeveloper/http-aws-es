@@ -1,5 +1,15 @@
 # Change Log
 
+## [v8.1.1](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.1.1) (2019-08-31)
+[Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.1.0...v8.1.1)
+
+## [v8.1.0](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.1.0) (2019-08-31)
+[Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.0.0...v8.1.0)
+
+**Closed issues:**
+
+- TypeError: this.Connection is not a constructor [\#1](https://github.com/compwright/aws-elasticsearch-connector/issues/1)
+
 ## [v8.0.0](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.0.0) (2019-08-17)
 [Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v7.0.0...v8.0.0)
 
