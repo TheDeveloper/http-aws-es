@@ -1,11 +1,11 @@
-const { Connection } = require('@elastic/elasticsearch');
-const aws4 = require('aws4');
-const AWS = require('aws-sdk');
+const { Connection } = require('@elastic/elasticsearch')
+const aws4 = require('aws4')
+const AWS = require('aws-sdk')
 
 class AmazonConnection extends Connection {
   constructor (options) {
-    super(options);
-    this.awsConfig = options.awsConfig || AWS.config;
+    super(options)
+    this.awsConfig = options.awsConfig || AWS.config
   }
 
   get credentials () {
@@ -17,25 +17,25 @@ class AmazonConnection extends Connection {
   }
 
   buildRequestObject (params) {
-    const req = super.buildRequestObject(params);
+    const req = super.buildRequestObject(params)
 
     if (!req.headers) {
-      req.headers = {};
+      req.headers = {}
     }
 
     // Fix the Host header, since HttpConnector.makeReqParams() appends
     // the port number which will cause signature verification to fail
-    req.headers['Host'] = req.hostname;
+    req.headers.Host = req.hostname
 
     if (params.body) {
-      req.headers['Content-Length'] = Buffer.byteLength(params.body, 'utf8');
-      req.body = params.body;
+      req.headers['Content-Length'] = Buffer.byteLength(params.body, 'utf8')
+      req.body = params.body
     } else {
-      req.headers['Content-Length'] = 0;
+      req.headers['Content-Length'] = 0
     }
 
-    return aws4.sign(req, this.credentials);
+    return aws4.sign(req, this.credentials)
   }
 }
 
-module.exports = AmazonConnection;
+module.exports = AmazonConnection

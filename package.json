@@ -31,7 +31,7 @@
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
-    "lint": "semistandard src/*.js tests/*.js --fix",
+    "lint": "standard src/*.js tests/*.js --fix",
     "pretest": "npm run lint",
     "test": "nyc --all mocha tests/AmazonConnection.test.js",
     "test:integration": "mocha tests/integration.test.js"
@@ -42,7 +42,7 @@
     "url": "https://compwright.com"
   },
   "license": "MIT",
-  "semistandard": {
+  "standard": {
     "env": [
       "mocha"
     ]
@@ -53,7 +53,8 @@
     ]
   },
   "dependencies": {
-    "aws4": "^1.8.0"
+    "aws4": "^1.8.0",
+    "lodash.get": "^4.4.2"
   },
   "peerDependencies": {
     "@elastic/elasticsearch": "^7.3.0",
@@ -62,10 +63,9 @@
   "devDependencies": {
     "@elastic/elasticsearch": "^7.3.0",
     "aws-sdk": "^2.512.0",
-    "eslint": "^6.1.0",
     "minimist": "^1.2.0",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1",
-    "semistandard": "^13.0.1"
+    "standard": "*"
   }
 }
