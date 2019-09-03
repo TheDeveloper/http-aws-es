@@ -1,6 +1,7 @@
 const { Connection } = require('@elastic/elasticsearch')
 const aws4 = require('aws4')
 const AWS = require('aws-sdk')
+const get = require('lodash.get')
 
 class AmazonConnection extends Connection {
   constructor (options) {
@@ -10,10 +11,10 @@ class AmazonConnection extends Connection {
 
   get credentials () {
     return {
-      accessKeyId: this.awsConfig.credentials.accessKeyId || process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY,
-      secretAccessKey: this.awsConfig.credentials.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY,
-      sessionToken: this.awsConfig.credentials.sessionToken || process.env.AWS_SESSION_TOKEN
-    };
+      accessKeyId: get(this.awsConfig, 'credentials.accessKeyId', process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY),
+      secretAccessKey: get(this.awsConfig, 'credentials.secretAccessKey', process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY),
+      sessionToken: get(this.awsConfig, 'credentials.sessionToken', process.env.AWS_SESSION_TOKEN)
+    }
   }
 
   buildRequestObject (params) {
