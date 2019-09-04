@@ -10,11 +10,17 @@ class AmazonConnection extends Connection {
   }
 
   get credentials () {
-    return {
-      accessKeyId: get(this.awsConfig, 'credentials.accessKeyId', process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY),
-      secretAccessKey: get(this.awsConfig, 'credentials.secretAccessKey', process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY),
+    const credentials = {
+      accessKeyId: get(this.awsConfig, 'credentials.accessKeyId', process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY || false),
+      secretAccessKey: get(this.awsConfig, 'credentials.secretAccessKey', process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY || false),
       sessionToken: get(this.awsConfig, 'credentials.sessionToken', process.env.AWS_SESSION_TOKEN)
     }
+
+    if (!credentials.accessKeyId || !credentials.secretAccessKey) {
+      throw new Error('Missing AWS credentials')
+    }
+
+    return credentials
   }
 
   buildRequestObject (params) {
