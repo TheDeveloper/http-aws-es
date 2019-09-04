@@ -33,7 +33,7 @@
     "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
     "lint": "standard src/*.js tests/*.js --fix",
     "pretest": "npm run lint",
-    "test": "nyc --all mocha tests/AmazonConnection.test.js",
+    "test": "AWS_PROFILE=null nyc --all mocha tests/AmazonConnection.test.js",
     "test:integration": "mocha tests/integration.test.js"
   },
   "author": {

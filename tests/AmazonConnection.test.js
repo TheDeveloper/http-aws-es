@@ -12,12 +12,42 @@ describe('AmazonConnection', function () {
     assert(AmazonConnection.prototype instanceof Connection)
   })
 
-  describe('constructor()', function () {
-    it('reads credentials from options.awsConfig.credentials', function () {
+  describe('.awsConfig', function () {
+    it('reads from options.awsConfig', function () {
+      const awsConfig = { foo: 'bar' }
+
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com'),
+        awsConfig
+      })
+
+      assert.deepStrictEqual(connector.awsConfig, awsConfig)
+    })
+
+    it('reads from AWS.config if options.awsConfig is not set', function () {
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com')
+      })
+
+      assert(connector.awsConfig === AWS.config)
+    })
+  })
+
+  describe('.credentials', function () {
+    it('throws an error when no credentials are present', function () {
+      assert.throws(function () {
+        const connector = new AmazonConnection({
+          url: new URL('https://foo.us-east-1.es.amazonaws.com')
+        })
+        const credentials = connector.credentials // eslint-disable-line no-unused-vars
+      })
+    })
+
+    it('reads from options.awsConfig.credentials', function () {
       const credentials = {
-        accessKeyId: 'foo',
-        secretAccessKey: 'bar',
-        sessionToken: 'baz'
+        accessKeyId: 'foo1',
+        secretAccessKey: 'bar1',
+        sessionToken: 'baz1'
       }
 
       const connector = new AmazonConnection({
@@ -28,11 +58,11 @@ describe('AmazonConnection', function () {
       assert.deepStrictEqual(connector.credentials, credentials)
     })
 
-    it('reads credentials from AWS.config', function () {
+    it('reads from AWS.config', function () {
       const credentials = {
-        accessKeyId: 'foo',
-        secretAccessKey: 'bar',
-        sessionToken: 'baz'
+        accessKeyId: 'foo2',
+        secretAccessKey: 'bar2',
+        sessionToken: 'baz2'
       }
 
       AWS.config.update({ credentials })
@@ -40,23 +70,53 @@ describe('AmazonConnection', function () {
       const connector = new AmazonConnection({
         url: new URL('https://foo.us-east-1.es.amazonaws.com')
       })
+
       assert.deepStrictEqual(connector.credentials, credentials)
     })
 
-    it('reads credentials from environment', function () {
-      process.env.AWS_ACCESS_KEY_ID = 'foo'
-      process.env.AWS_SECRET_ACCESS_KEY = 'bar'
-      process.env.AWS_SESSION_TOKEN = 'baz'
-
+    it('reads the latest credentials from AWS.config after they are changed', function () {
       const credentials = {
-        accessKeyId: 'foo',
-        secretAccessKey: 'bar',
-        sessionToken: 'baz'
+        accessKeyId: 'foo21',
+        secretAccessKey: 'bar21',
+        sessionToken: 'baz21'
       }
+
+      AWS.config.update({ credentials })
 
       const connector = new AmazonConnection({
         url: new URL('https://foo.us-east-1.es.amazonaws.com')
       })
+
+      assert.deepStrictEqual(connector.credentials, credentials)
+
+      const credentials2 = {
+        accessKeyId: 'foo22',
+        secretAccessKey: 'bar22',
+        sessionToken: 'baz22'
+      }
+
+      AWS.config.update({ credentials: credentials2 })
+
+      assert.deepStrictEqual(connector.credentials, credentials2)
+    })
+
+    it('reads from the environment', function () {
+      process.env.AWS_ACCESS_KEY_ID = 'foo3'
+      process.env.AWS_SECRET_ACCESS_KEY = 'bar3'
+      process.env.AWS_SESSION_TOKEN = 'baz3'
+
+      const credentials = {
+        accessKeyId: 'foo3',
+        secretAccessKey: 'bar3',
+        sessionToken: 'baz3'
+      }
+
+      AWS.config.update({ credentials: null })
+
+      const connector = new AmazonConnection({
+        url: new URL('https://foo.us-east-1.es.amazonaws.com')
+      })
+
       assert.deepStrictEqual(connector.credentials, credentials)
     })
   })
