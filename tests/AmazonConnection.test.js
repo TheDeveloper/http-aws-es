@@ -5,7 +5,7 @@ const assert = require('assert')
 const AWS = require('aws-sdk')
 const { URL } = require('url')
 
-const AmazonConnection = require('../src')
+const { AmazonConnection } = require('../src')
 
 describe('AmazonConnection', function () {
   it('extends Connection', function () {

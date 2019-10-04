@@ -22,10 +22,11 @@ npm install --save aws-elasticsearch-connector @elastic/elasticsearch aws-sdk
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector'),
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
   awsConfig: {
     credentials: {
       accessKeyId: 'foo',
@@ -41,6 +42,7 @@ const client = new Client({
 ```javascript
 const AWS = require('aws-sdk');
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 // Load AWS profile credentials
 AWS.config.update({
@@ -48,8 +50,8 @@ AWS.config.update({
 });
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector')
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection
 });
 ```
 
@@ -63,10 +65,24 @@ AWS_SESSION_TOKEN=baz
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector'),
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+});
+```
+
+### With credentials from ECS container or EC2 instance profile
+
+```javascript
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection, AmazonTransport } = require('aws-elasticsearch-connector');
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+  Transport: AmazonTransport
 });
 ```
 

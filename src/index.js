@@ -1,4 +1,4 @@
-const { Connection } = require('@elastic/elasticsearch')
+const { Connection, Transport } = require('@elastic/elasticsearch')
 const aws4 = require('aws4')
 const AWS = require('aws-sdk')
 const get = require('lodash.get')
@@ -45,4 +45,32 @@ class AmazonConnection extends Connection {
   }
 }
 
-module.exports = AmazonConnection
+class AmazonTransport extends Transport {
+  wrappedRequest (params, options, callback) {
+    AWS.config.getCredentials(() => {
+      super.request(params, options, callback)
+    })
+  }
+
+  request (params, options, callback) {
+    options = options || {}
+    if (typeof options === 'function') {
+      callback = options
+      options = {}
+    }
+    // promises support
+    if (callback == null) {
+      return new Promise((resolve, reject) => {
+        this.wrappedRequest(params, options, (err, result) => {
+          err ? reject(err) : resolve(result)
+        })
+      })
+    }
+    this.wrappedRequest(params, options, callback)
+  }
+}
+
+module.exports = {
+  AmazonConnection,
+  AmazonTransport
+}
