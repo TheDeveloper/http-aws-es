@@ -18,7 +18,7 @@ npm install --save aws-elasticsearch-connector @elastic/elasticsearch aws-sdk
 
 ## Example usage
 
-### With specific credentials
+### With static credentials
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');
@@ -37,7 +37,7 @@ const client = new Client({
 });
 ```
 
-### With credentials from AWS.Config
+### With static credentials from AWS.Config
 
 ```javascript
 const AWS = require('aws-sdk');
@@ -55,7 +55,7 @@ const client = new Client({
 });
 ```
 
-### With credentials from the environment
+### With static credentials from the environment
 
 ```env
 AWS_ACCESS_KEY_ID=foo      # alias: AWS_ACCESS_KEY
@@ -73,7 +73,12 @@ const client = new Client({
 });
 ```
 
-### With credentials from ECS container or EC2 instance profile
+### With asynchronous or refreshing credentials from AWS
+
+When reading AWS credentials from an IAM role or an EC2/ECS profile, the credentials
+will be retrieved and refreshed automatically. In this case you'll need to use the
+bundled `AmazonTransport` transport which will call AWS.Config.getCredentials()
+before each ElasticSearch request to ensure that the latest credentials are used.
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');

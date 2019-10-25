@@ -49,7 +49,7 @@
   },
   "nyc": {
     "include": [
-      "src/**/*.js"
+      "src/**/Amazon*.js"
     ]
   },
   "dependencies": {
