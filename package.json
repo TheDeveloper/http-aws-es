@@ -57,14 +57,14 @@
     "lodash.get": "^4.4.2"
   },
   "peerDependencies": {
-    "@elastic/elasticsearch": "^7.3.0",
-    "aws-sdk": "^2.512.0"
+    "@elastic/elasticsearch": ">=5",
+    "aws-sdk": "^2.556.0"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^7.3.0",
-    "aws-sdk": "^2.512.0",
+    "@elastic/elasticsearch": "^7.4.0",
+    "aws-sdk": "^2.556.0",
     "minimist": "^1.2.0",
-    "mocha": "^6.2.0",
+    "mocha": "^6.2.2",
     "nyc": "^14.1.1",
     "standard": "*"
   }
