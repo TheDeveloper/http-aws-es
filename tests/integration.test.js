@@ -4,7 +4,7 @@ const AWS = require('aws-sdk')
 const { Client } = require('@elastic/elasticsearch')
 const argv = require('minimist')(process.argv.slice(2))
 
-const AmazonConnection = require('../src')
+const { AmazonConnection, AmazonTransport } = require('../src')
 
 AWS.config.update({
   region: argv.region,
@@ -14,6 +14,7 @@ AWS.config.update({
 const client = new Client({
   node: argv.endpoint,
   Connection: AmazonConnection,
+  Transport: AmazonTransport,
   awsConfig: {
     credentials: {
       accessKeyId: AWS.config.credentials.accessKeyId,

@@ -18,14 +18,15 @@ npm install --save aws-elasticsearch-connector @elastic/elasticsearch aws-sdk
 
 ## Example usage
 
-### With specific credentials
+### With static credentials
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector'),
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
   awsConfig: {
     credentials: {
       accessKeyId: 'foo',
@@ -36,11 +37,12 @@ const client = new Client({
 });
 ```
 
-### With credentials from AWS.Config
+### With static credentials from AWS.Config
 
 ```javascript
 const AWS = require('aws-sdk');
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 // Load AWS profile credentials
 AWS.config.update({
@@ -48,12 +50,12 @@ AWS.config.update({
 });
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector')
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection
 });
 ```
 
-### With credentials from the environment
+### With static credentials from the environment
 
 ```env
 AWS_ACCESS_KEY_ID=foo      # alias: AWS_ACCESS_KEY
@@ -63,10 +65,29 @@ AWS_SESSION_TOKEN=baz
 
 ```javascript
 const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
 
 const client = new Client({
-  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com'
-  Connection: require('aws-elasticsearch-connector'),
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+});
+```
+
+### With asynchronous or refreshing credentials from AWS
+
+When reading AWS credentials from an IAM role or an EC2/ECS profile, the credentials
+will be retrieved and refreshed automatically. In this case you'll need to use the
+bundled `AmazonTransport` transport which will call AWS.Config.getCredentials()
+before each ElasticSearch request to ensure that the latest credentials are used.
+
+```javascript
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection, AmazonTransport } = require('aws-elasticsearch-connector');
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+  Transport: AmazonTransport
 });
 ```
 
