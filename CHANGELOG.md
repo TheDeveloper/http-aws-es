@@ -1,11 +1,19 @@
 # Change Log
 
-## [v8.1.3](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.1.3) (2019-09-04)
-[Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.1.2...v8.1.3)
+## [v8.2.0](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.2.0) (2019-10-25)
+[Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.1.3...v8.2.0)
 
 **Closed issues:**
 
+- The request signature we calculated does not match the signature you provided [\#4](https://github.com/compwright/aws-elasticsearch-connector/issues/4)
 - Support for IAM Roles? [\#3](https://github.com/compwright/aws-elasticsearch-connector/issues/3)
+
+**Merged pull requests:**
+
+- Handle refreshed credentials when running in ECS or EC2 [\#5](https://github.com/compwright/aws-elasticsearch-connector/pull/5) ([nathanmoon](https://github.com/nathanmoon))
+
+## [v8.1.3](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.1.3) (2019-09-04)
+[Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.1.2...v8.1.3)
 
 ## [v8.1.2](https://github.com/compwright/aws-elasticsearch-connector/tree/v8.1.2) (2019-09-03)
 [Full Changelog](https://github.com/compwright/aws-elasticsearch-connector/compare/v8.1.1...v8.1.2)
