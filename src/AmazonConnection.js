@@ -6,7 +6,7 @@ const get = require('lodash.get')
 class AmazonConnection extends Connection {
   constructor (options) {
     super(options)
-    this.awsConfig = options.awsConfig || AWS.config
+    this.awsConfig = options.auth || AWS.config
   }
 
   get credentials () {
