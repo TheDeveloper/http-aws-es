@@ -1,46 +1,102 @@
-# Connection handler for Amazon ES [<img title="Version" src="https://img.shields.io/npm/v/http-aws-es.svg?style=flat-square" />](https://www.npmjs.org/package/http-aws-es)
-Makes [elasticsearch-js](https://github.com/elastic/elasticsearch-js) compatible with Amazon ES. It uses the aws-sdk to make signed requests to an Amazon ES endpoint.
+# aws-elasticsearch-connector
+
+[![Build Status](https://travis-ci.org/compwright/aws-elasticsearch-connector.png?branch=master)](https://travis-ci.org/compwright/aws-elasticsearch-connector)
+[![Code Climate](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/badges/gpa.svg)](https://codeclimate.com/github/compwright/aws-elasticsearch-connector)
+[![Test Coverage](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/badges/coverage.svg)](https://codeclimate.com/github/compwright/aws-elasticsearch-connector/coverage)
+[![Dependency Status](https://img.shields.io/david/compwright/aws-elasticsearch-connector.svg?style=flat-square)](https://david-dm.org/compwright/aws-elasticsearch-connector)
+[![Download Status](https://img.shields.io/npm/dm/aws-elasticsearch-connector.svg?style=flat-square)](https://www.npmjs.com/package/aws-elasticsearch-connector)
+
+A tiny [Amazon Signature Version 4](https://www.npmjs.com/package/aws4) connection class for the official [Elasticsearch Node.js client](https://www.npmjs.com/package/elasticsearch), for compatibility with AWS Elasticsearch and IAM authentication.
+
+> For legacy [Elasticsearch.js 16.x](https://www.npmjs.com/package/elasticsearch) support, use version 7.x of this library.
 
 ## Installation
+
 ```bash
-# Install the connector, elasticsearch client and aws-sdk
-npm install --save http-aws-es aws-sdk elasticsearch
+npm install --save aws-elasticsearch-connector @elastic/elasticsearch aws-sdk
 ```
 
-## Usage
+## Example usage
+
+### With static credentials
+
 ```javascript
-// create an elasticsearch client for your Amazon ES
-let es = require('elasticsearch').Client({
-  hosts: [ 'https://amazon-es-host.us-east-1.es.amazonaws.com' ],
-  connectionClass: require('http-aws-es')
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+  awsConfig: {
+    credentials: {
+      accessKeyId: 'foo',
+      secretAccessKey: 'bar',
+      sessionToken: 'baz' // optional
+    }
+  }
 });
 ```
 
-## Region + Credentials
-The connector uses aws-sdk's default behaviour to obtain region + credentials from your environment. If you would like to set these manually, you can set them on aws-sdk:
+### With static credentials from AWS.Config
 
 ```javascript
-let AWS = require('aws-sdk');
+const AWS = require('aws-sdk');
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
+
+// Load AWS profile credentials
 AWS.config.update({
-  credentials: new AWS.Credentials(accessKeyId, secretAccessKey),
-  region: 'us-east-1'
+  profile: 'my-profile'
+});
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection
 });
 ```
 
-## Options
+### With static credentials from the environment
+
+```env
+AWS_ACCESS_KEY_ID=foo      # alias: AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=bar  # alias: AWS_SECRET_KEY
+AWS_SESSION_TOKEN=baz
+```
+
 ```javascript
-let options = {
-  hosts: [], // array of amazon es hosts (required)
-  connectionClass: require('http-aws-es'), // use this connector (required)
-  awsConfig: new AWS.Config({ region }), // set an aws config e.g. for multiple clients to different regions
-  httpOptions: {} // set httpOptions on aws-sdk's request. default to aws-sdk's config.httpOptions
-};
-let es = require('elasticsearch').Client(options);
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection } = require('aws-elasticsearch-connector');
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+});
+```
+
+### With asynchronous or refreshing credentials from AWS
+
+When reading AWS credentials from an IAM role or an EC2/ECS profile, the credentials
+will be retrieved and refreshed automatically. In this case you'll need to use the
+bundled `AmazonTransport` transport which will call AWS.Config.getCredentials()
+before each ElasticSearch request to ensure that the latest credentials are used.
+
+```javascript
+const { Client } = require('@elastic/elasticsearch');
+const { AmazonConnection, AmazonTransport } = require('aws-elasticsearch-connector');
+
+const client = new Client({
+  node: 'my-elasticsearch-cluster.us-east-1.es.amazonaws.com',
+  Connection: AmazonConnection,
+  Transport: AmazonTransport
+});
 ```
 
 ## Test
+
 ```bash
 npm test
-# test against a real endpoint
-AWS_PROFILE=your-profile npm run integration-test -- --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com --region us-east-1
+
+# Run integration tests against a real endpoint
+AWS_PROFILE=your-profile npm run test:integration -- \
+  --endpoint https://amazon-es-host.us-east-1.es.amazonaws.com
 ```
